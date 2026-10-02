@@ -70,7 +70,7 @@ def setup():
         return
     KEY_FILE.parent.mkdir(parents=True, exist_ok=True)
     if not KEY_FILE.exists():
-        KEY_FILE.write_text("# TypeSafe key. Get one free at https://console.typesafe.ai/keys (5 dollars of credit, no card)\n"
+        KEY_FILE.write_text("# TypeSafe key: https://console.typesafe.ai/keys (the console may ask for a card to add credit)\n"
                             "TYPESAFE_API_KEY=paste-your-key-here\n")
         KEY_FILE.chmod(0o600)
     print(f"Key file: {KEY_FILE}\n1. Get a key at https://console.typesafe.ai/keys\n"
