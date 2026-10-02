@@ -1,0 +1,11 @@
+# secrets: never commit
+.env
+.env.*
+!.env.example
+
+# run outputs
+jev-runs/
+node_modules/
+.next/
+.vercel/
+__pycache__/

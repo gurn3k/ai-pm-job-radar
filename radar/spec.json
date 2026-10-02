@@ -1,0 +1,208 @@
+{
+  "model": "jev-latest",
+  "context": {
+    "goal": "Find product manager, program manager and technical program manager openings at AI and tech companies for a job seeker based in Toronto, Canada. Each item is one job posting copied from the company's public careers board."
+  },
+  "state_fields": [
+    "title",
+    "department",
+    "location",
+    "description"
+  ],
+  "questions": {
+    "role_kind": {
+      "type": "choice",
+      "instructions": "What kind of job is this posting for? Judge from `title`, `department` and the responsibilities in `description`. A title containing the word product or program does not decide it: product marketing, product design, product engineering, and fellowship, internship or outreach programs are different jobs. Choose `other` when it is none of these, or when the posting is too thin to tell.",
+      "criteria": {
+        "product_manager": "Owns what gets built: sets product direction, writes requirements or specs, prioritizes a roadmap, works with engineering and design. Includes APM, PM, Group PM, Head of Product, VP or Director of Product, and product lead roles.",
+        "technical_program_manager": "Drives delivery of technical work across engineering teams: owns schedules, dependencies, launch readiness and risk for infrastructure, platform, model or hardware programs. Includes TPM and technical program lead roles.",
+        "program_manager": "Runs cross-functional programs that are not mainly engineering delivery: operations, partnerships, policy, go-to-market, compliance, or company-wide initiatives. Includes program managers, PMO and program leads.",
+        "research_or_fellowship": "A fellowship, residency, internship cohort, or research program the person joins as a participant, not a job managing a program.",
+        "product_marketing": "Positions and launches products to the market: messaging, go-to-market, competitive intelligence, launches.",
+        "product_design": "Designs the user experience and interface: product designer, UX, design manager.",
+        "engineering": "Writes or manages code: product engineer, software engineer, engineering manager, reliability engineer.",
+        "sales_or_success": "Sells or supports the product for customers: account executive, solutions, customer success, support, operations.",
+        "other": "None of the above, or the posting does not say enough to tell."
+      }
+    },
+    "ai_scope": {
+      "type": "choice",
+      "instructions": "How central is AI to the product this role works on? Judge from what the `description` says this team builds and what this role owns. Ignore company-wide text that appears on every posting, such as statements about the company's AI mission, how the company uses AI in recruiting, or AI in the benefits and culture sections. Choose `unclear` when the description does not say what the product is.",
+      "criteria": {
+        "ai_native": "The product itself is an AI model, an agent, or a feature powered by an LLM or machine learning model (for example a coding agent, an AI assistant, model behavior, AI search).",
+        "ai_platform": "Builds infrastructure or tools that other teams use to build AI: training data, evals, inference, model APIs, ML platform, GPUs.",
+        "not_ai": "The product is not AI: payments, billing, growth, marketplace, mobile app, internal tools, or AI is mentioned only as a nice-to-have.",
+        "unclear": "The description does not say what the product is."
+      }
+    },
+    "seniority": {
+      "type": "score",
+      "instructions": "What level is this role? Use the title first, then years of experience and scope in `description`.",
+      "criteria": [
+        "Entry level or associate (0-2 years)",
+        "Mid level (2-5 years)",
+        "Senior (5-8 years)",
+        "Staff, principal or group lead (8+ years, owns an area or leads other managers)",
+        "Director, head of a function or above"
+      ]
+    },
+    "requires_ml_background": {
+      "type": "noul",
+      "instructions": "Does the posting require prior hands-on machine learning or AI model experience as a must-have (for example shipped ML models, ML research, an ML degree, or training LLMs)? Preferred or nice-to-have qualifications do not count as required. Being able to talk about AI, understanding AI products, or explaining AI to customers is not hands-on ML experience.",
+      "criteria": {
+        "true": "A must-have qualification is hands-on ML, AI model, or research experience.",
+        "false": "No must-have hands-on ML experience: AI knowledge is optional, preferred, conversational, or can be learned on the job, or AI is not mentioned."
+      }
+    },
+    "requires_engineering_background": {
+      "type": "noul",
+      "instructions": "Does the posting require a computer science degree or prior work as a software engineer as a must-have? Being comfortable with technical concepts or working with engineers does not count.",
+      "criteria": {
+        "true": "A must-have is a CS or engineering degree, or years spent as a software engineer.",
+        "false": "No engineering degree or engineering work history is required."
+      }
+    }
+  },
+  "buckets": [
+    {
+      "name": "ai_program_or_tpm",
+      "when": [
+        [
+          "role_kind",
+          "in",
+          [
+            "technical_program_manager",
+            "program_manager"
+          ]
+        ],
+        [
+          "role_kind.confidence",
+          ">=",
+          0.6
+        ],
+        [
+          "ai_scope",
+          "in",
+          [
+            "ai_native",
+            "ai_platform"
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "ai_pm_no_ml_required",
+      "when": [
+        [
+          "role_kind",
+          "==",
+          "product_manager"
+        ],
+        [
+          "role_kind.confidence",
+          ">=",
+          0.6
+        ],
+        [
+          "ai_scope",
+          "in",
+          [
+            "ai_native",
+            "ai_platform"
+          ]
+        ],
+        [
+          "requires_ml_background",
+          "<",
+          0.5
+        ]
+      ]
+    },
+    {
+      "name": "ai_pm_ml_required",
+      "when": [
+        [
+          "role_kind",
+          "==",
+          "product_manager"
+        ],
+        [
+          "role_kind.confidence",
+          ">=",
+          0.6
+        ],
+        [
+          "ai_scope",
+          "in",
+          [
+            "ai_native",
+            "ai_platform"
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "program_or_tpm_non_ai",
+      "when": [
+        [
+          "role_kind",
+          "in",
+          [
+            "technical_program_manager",
+            "program_manager"
+          ]
+        ],
+        [
+          "role_kind.confidence",
+          ">=",
+          0.6
+        ]
+      ]
+    },
+    {
+      "name": "pm_non_ai",
+      "when": [
+        [
+          "role_kind",
+          "==",
+          "product_manager"
+        ],
+        [
+          "role_kind.confidence",
+          ">=",
+          0.6
+        ]
+      ]
+    },
+    {
+      "name": "not_a_fit",
+      "when": [
+        [
+          "role_kind",
+          "not_in",
+          [
+            "technical_program_manager",
+            "program_manager",
+            "product_manager"
+          ]
+        ],
+        [
+          "role_kind.confidence",
+          ">=",
+          0.6
+        ]
+      ]
+    }
+  ],
+  "show": [
+    "company",
+    "title",
+    "role_kind",
+    "ai_scope",
+    "seniority",
+    "location_fit",
+    "requires_ml_background",
+    "pay_low",
+    "pay_high"
+  ]
+}
