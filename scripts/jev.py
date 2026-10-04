@@ -244,6 +244,12 @@ def run(a):
         for line in cache_path.read_text().splitlines():
             c = json.loads(line); cache[c["hash"]] = c
     todo = [it for it in items if it[3] not in cache]
+    if a.max_cost is not None:
+        est = (sum(len(json.dumps(it[2], default=str)) for it in todo) / 4
+               + len(todo) * len(json.dumps(spec["questions"])) / 4) * PRICE_PER_M_INPUT / 1e6
+        if est > a.max_cost:
+            raise SystemExit(f"Estimated cost ${est:.4f} for {len(todo)} calls is over --max-cost ${a.max_cost:.2f}. Nothing was called.")
+        print(f"{len(todo)} new calls, estimated ${est:.4f} (cap ${a.max_cost:.2f})")
     body_base = {"model": spec.get("model", "jev-latest"), "questions": spec["questions"]}
 
     def call(it):
@@ -340,6 +346,7 @@ def main():
     r.add_argument("spec"); r.add_argument("input"); r.add_argument("--out", required=True)
     r.add_argument("--sample", type=int); r.add_argument("--limit", type=int); r.add_argument("--seed", type=int, default=7)
     r.add_argument("--concurrency", type=int, default=16); r.add_argument("--dry-run", action="store_true")
+    r.add_argument("--max-cost", type=float, help="abort before any API call if the estimated dollars for new calls exceed this")
     a = ap.parse_args()
     {"setup": lambda: setup(), "check": lambda: check(), "run": lambda: run(a)}[a.cmd]()
 

@@ -32,6 +32,7 @@ def main():
     ap.add_argument("--scanned", type=int, help="open roles scanned before the title filter (printed by fetch.py)")
     ap.add_argument("--date", help="run date YYYY-MM-DD (default: results.jsonl modified date)")
     ap.add_argument("--out", default=str(ROOT / "site" / "data.json"))
+    ap.add_argument("--force", action="store_true", help="publish even if the role count dropped by more than half")
     a = ap.parse_args()
 
     run = Path(a.run)
@@ -39,6 +40,17 @@ def main():
     summary = (run / "summary.md").read_text(encoding="utf-8") if (run / "summary.md").exists() else ""
     wall = re.search(r"Wall time: ([\d.]+)s", summary)
     boards = json.loads((ROOT / "radar" / "boards.json").read_text())
+
+    # Refuse to publish a broken run: too many failed labels, or far fewer roles than the live page.
+    inp = run / "input.jsonl"
+    if inp.exists():
+        expected = sum(1 for l in inp.open(encoding="utf-8") if l.strip())
+        if len(rows) < 0.95 * expected:
+            raise SystemExit(f"Only {len(rows)} of {expected} roles labeled; not exporting.")
+    if Path(a.out).exists() and not a.force:
+        live = len(json.loads(Path(a.out).read_text(encoding="utf-8"))["roles"])
+        if len(rows) < 0.5 * live:
+            raise SystemExit(f"{len(rows)} roles vs {live} on the live page; not exporting (use --force if this is real).")
 
     roles = []
     for r in rows:

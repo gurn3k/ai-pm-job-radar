@@ -6,7 +6,9 @@ I built this for my own search: I'm a Toronto-based program manager targeting AI
 
 **Live:** [ai-pm-job-radar.vercel.app](https://ai-pm-job-radar.vercel.app), every labeled role with filters for bucket, company and Toronto fit.
 
-## Latest run (2026-10-02)
+## First full run (2026-10-02)
+
+The live page refreshes every Monday (see `.github/workflows/weekly-refresh.yml`); these are the numbers from the first run.
 
 | | |
 |---|---|
@@ -78,7 +80,7 @@ python3 ../../scripts/jev.py run ../../radar/spec.json input.jsonl --out . --sam
 python3 ../../scripts/jev.py run ../../radar/spec.json input.jsonl --out .              # everything
 ```
 
-To refresh the site after a run, export and push; Vercel redeploys from `main`:
+The site refreshes itself every Monday through GitHub Actions: fetch, label (capped at $0.30), export, push, and Vercel redeploys. The export refuses to publish if more than 5% of labels failed or the role count halves. To refresh by hand, export and push:
 
 ```bash
 python3 scripts/export_site.py jev-runs/radar/full --scanned <total printed by fetch.py>
