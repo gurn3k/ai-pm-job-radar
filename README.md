@@ -4,6 +4,8 @@ Every product, program and technical program manager opening at 36 AI and tech c
 
 I built this for my own search: I'm a Toronto-based program manager targeting AI program, TPM and AI product roles. Job boards can't answer the questions I actually care about: is the product itself AI, does the role require hands-on ML, is it a program role or a product role, and can I do it from Toronto. A title filter gets these wrong, and running an LLM over a thousand postings every day is slow and expensive. So the radar splits the work: code handles the facts, and [Jev](https://docs.typesafe.ai) (TypeSafe's System One model) handles the meaning.
 
+**Live:** [ai-pm-job-radar.vercel.app](https://ai-pm-job-radar.vercel.app), every labeled role with filters for bucket, company and Toronto fit.
+
 ## Latest run (2026-10-02)
 
 | | |
@@ -35,6 +37,8 @@ radar/boards.json   which companies (Greenhouse, Ashby, Lever slugs)
 radar/fetch.py      pulls every open role, keeps product/program titles, computes facts in code
 radar/spec.json     the questions Jev answers per role, plus bucket rules
 scripts/jev.py      runs the spec over every role, caches answers, writes CSV + summary
+scripts/export_site.py  writes site/data.json (posting facts + labels only, no descriptions)
+site/               static page on Vercel: no server, no API key, strict CSP
 ```
 
 **Code computes facts.** Pay ranges, the remote flag and where a Toronto-based person stands (`remote_canada`, `toronto_ontario_office`, `canada_other_city`, `canada_unspecified`, `outside_canada`) come from regex over the posting. The first version asked Jev for location, and it labeled four "Vancouver, BC" roles as US-only. A location string is a fact, so I moved it into code.
@@ -72,6 +76,13 @@ mkdir -p jev-runs/radar && cd jev-runs/radar
 python3 ../../radar/fetch.py --out input.jsonl
 python3 ../../scripts/jev.py run ../../radar/spec.json input.jsonl --out . --sample 40   # under a cent
 python3 ../../scripts/jev.py run ../../radar/spec.json input.jsonl --out .              # everything
+```
+
+To refresh the site after a run:
+
+```bash
+python3 scripts/export_site.py jev-runs/radar/full --scanned <total printed by fetch.py>
+cd site && vercel deploy --prod
 ```
 
 `--dry-run` prints the token and cost estimate without calling the API. Reruns only pay for new postings. `jev.py` has an untested Vercel AI Gateway path that is used only when `AI_GATEWAY_API_KEY` is set and no TypeSafe key is.

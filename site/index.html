@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI PM Job Radar</title>
+<meta name="description" content="Every product, program and TPM opening at 36 AI and tech companies, labeled by Jev in 15 seconds for 11 cents.">
+<meta property="og:title" content="AI PM Job Radar">
+<meta property="og:description" content="Every product, program and TPM opening at 36 AI and tech companies, labeled by Jev in 15 seconds for 11 cents.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%232f6fde' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%232f6fde'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<script src="app.js" defer></script>
+</head>
+<body>
+<main>
+  <header>
+    <p class="eyebrow">Built by Gurnek Khaira · <a href="https://github.com/gurn3k/ai-pm-job-radar">Source on GitHub</a></p>
+    <h1>AI PM Job Radar</h1>
+    <p class="lede">Every product, program and technical program manager opening at <span data-run="boards">36</span> AI and tech companies, sorted by a decision model. Code handles the facts (location, pay); <a href="https://docs.typesafe.ai">Jev</a> judges the meaning (is the product AI, is ML required, is it a program or product role).</p>
+  </header>
+
+  <section class="stats" aria-label="Latest run">
+    <div><span class="num" data-run="scanned">—</span><span class="lbl">open roles scanned</span></div>
+    <div><span class="num" data-run="labeled">—</span><span class="lbl">PM, program and TPM titles labeled</span></div>
+    <div><span class="num" data-run="seconds">—</span><span class="lbl">to label all of them</span></div>
+    <div><span class="num" data-run="cost">—</span><span class="lbl">total model cost</span></div>
+  </section>
+  <p class="meta">Run <span data-run="date">—</span> · model <code data-run="model">—</code> · p50 <span data-run="p50">—</span> per call</p>
+
+  <section class="finding">
+    <h2>Finding</h2>
+    <p id="finding">Loading…</p>
+  </section>
+
+  <section aria-labelledby="buckets-h">
+    <h2 id="buckets-h">Where the roles land</h2>
+    <div id="buckets" class="buckets"></div>
+  </section>
+
+  <section aria-labelledby="roles-h">
+    <h2 id="roles-h">Roles</h2>
+    <form id="filters" class="filters" role="search">
+      <label class="grow">Search <input id="q" type="search" placeholder="Title, company, location" autocomplete="off"></label>
+      <label>Bucket <select id="bucket"><option value="">All target buckets</option><option value="*">Everything</option></select></label>
+      <label>Company <select id="company"><option value="">All</option></select></label>
+      <label class="check"><input id="toronto" type="checkbox"> Doable from Toronto</label>
+    </form>
+    <p id="count" class="meta" aria-live="polite"></p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr>
+          <th scope="col">Company</th><th scope="col">Role</th><th scope="col">Bucket</th>
+          <th scope="col">Level</th><th scope="col">Location</th><th scope="col" class="r">Pay (USD)</th>
+          <th scope="col" class="r" title="Jev's probability that hands-on ML experience is a must-have">ML req.</th>
+        </tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <button id="more" type="button" hidden>Show more</button>
+  </section>
+
+  <section aria-labelledby="how-h" class="how">
+    <h2 id="how-h">How it works</h2>
+    <ol>
+      <li><strong>Fetch.</strong> Pull every open role from 36 public Greenhouse, Ashby and Lever boards; keep titles with "product" or "program".</li>
+      <li><strong>Facts in code.</strong> Pay ranges, the remote flag and Toronto/Canada location fit come from regex. An early version asked the model for location and it labeled Vancouver roles as US-only, so location moved to code.</li>
+      <li><strong>Meaning from Jev.</strong> Five typed questions per posting (role kind, AI scope, seniority, ML required, engineering required), each with a probability. Buckets combine the answers in code; anything under 0.6 confidence goes to review.</li>
+    </ol>
+    <p class="note">Labels are model judgments. So far 40 roles have been checked by hand; no accuracy figure is claimed yet. Pay is what the posting lists; blank means not listed.</p>
+  </section>
+
+  <footer>
+    <p>Postings come from each company's public careers board and link back to it. Built on the how-to-jev skill by <a href="https://www.product-growth.com">Aakash Gupta</a> (MIT).</p>
+  </footer>
+</main>
+</body>
+</html>
