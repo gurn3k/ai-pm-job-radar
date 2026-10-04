@@ -78,11 +78,11 @@ python3 ../../scripts/jev.py run ../../radar/spec.json input.jsonl --out . --sam
 python3 ../../scripts/jev.py run ../../radar/spec.json input.jsonl --out .              # everything
 ```
 
-To refresh the site after a run:
+To refresh the site after a run, export and push; Vercel redeploys from `main`:
 
 ```bash
 python3 scripts/export_site.py jev-runs/radar/full --scanned <total printed by fetch.py>
-cd site && vercel deploy --prod
+git add site/data.json && git commit -m "Refresh radar data" && git push
 ```
 
 `--dry-run` prints the token and cost estimate without calling the API. Reruns only pay for new postings. `jev.py` has an untested Vercel AI Gateway path that is used only when `AI_GATEWAY_API_KEY` is set and no TypeSafe key is.
