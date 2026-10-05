@@ -7,72 +7,108 @@
 <meta name="description" content="Every product, program and TPM opening at 36 AI and tech companies, labeled by Jev in 15 seconds for 11 cents.">
 <meta property="og:title" content="AI PM Job Radar">
 <meta property="og:description" content="Every product, program and TPM opening at 36 AI and tech companies, labeled by Jev in 15 seconds for 11 cents.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%232f6fde' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%232f6fde'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='13' fill='none' stroke='%232a78d6' stroke-width='3'/%3E%3Ccircle cx='16' cy='16' r='4' fill='%232a78d6'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="style.css">
 <script src="app.js" defer></script>
 </head>
 <body>
-<main>
-  <header>
-    <p class="eyebrow">Built by Gurnek Khaira · <a href="https://github.com/gurn3k/ai-pm-job-radar">Source on GitHub</a></p>
-    <h1>AI PM Job Radar</h1>
-    <p class="lede">Every product, program and technical program manager opening at <span data-run="boards">36</span> AI and tech companies, sorted by a decision model. Code handles the facts (location, pay); <a href="https://docs.typesafe.ai">Jev</a> judges the meaning (is the product AI, is ML required, is it a program or product role).</p>
+<nav class="topbar" aria-label="Sections">
+  <a class="brand" href="#top">AI PM Job Radar</a>
+  <span class="links"><a href="#findings">Findings</a><a href="#method">Method</a><a href="#accuracy">Accuracy</a><a href="#roles">Roles</a></span>
+</nav>
+
+<main id="top">
+  <header class="masthead">
+    <p class="kicker">A weekly data project · Updated <span data-run="date">—</span></p>
+    <h1 id="headline">Most AI product manager roles want judgment about AI, not a model-building background.</h1>
+    <p class="dek">Every week, I pull every product, program and technical program manager opening from <span data-run="boards">36</span> AI and tech companies and have a decision model label each one. Code handles the facts (location, pay); <a href="https://docs.typesafe.ai">Jev</a> judges the meaning (is the product AI, is ML required, is it a program or product role).</p>
+    <p class="byline">By <strong>Gurnek Khaira</strong> · <a href="https://github.com/gurn3k/ai-pm-job-radar">Source on GitHub</a></p>
   </header>
 
-  <section class="stats" aria-label="Latest run">
-    <div><span class="num" data-run="scanned">—</span><span class="lbl">open roles scanned</span></div>
-    <div><span class="num" data-run="labeled">—</span><span class="lbl">PM, program and TPM titles labeled</span></div>
-    <div><span class="num" data-run="seconds">—</span><span class="lbl">to label all of them</span></div>
-    <div><span class="num" data-run="cost">—</span><span class="lbl">total model cost</span></div>
-  </section>
-  <p class="meta">Run <span data-run="date">—</span> · model <code data-run="model">—</code> · p50 <span data-run="p50">—</span> per call</p>
+  <figure class="hero-chart" aria-labelledby="hero-cap">
+    <figcaption id="hero-cap" class="fig-title">AI product manager openings, by whether hands-on ML experience is a must-have</figcaption>
+    <div id="hero-bars" class="hbars"></div>
+    <p id="hero-note" class="annotation"></p>
+  </figure>
 
-  <section class="finding">
-    <h2>Finding</h2>
-    <p id="finding">Loading…</p>
-  </section>
-
-  <section aria-labelledby="buckets-h">
-    <h2 id="buckets-h">Where the roles land</h2>
-    <div id="buckets" class="buckets"></div>
+  <section class="pipeline" aria-label="This week's run">
+    <div class="step"><span class="big" data-run="scanned">—</span><span class="cap">open roles scanned on public careers boards</span></div>
+    <div class="step"><span class="big" data-run="labeled">—</span><span class="cap">PM, program and TPM titles kept and labeled</span></div>
+    <div class="step"><span class="big" data-run="seconds">—</span><span class="cap">to label all of them, p50 <span data-run="p50">—</span> per call</span></div>
+    <div class="step"><span class="big" data-run="cost">—</span><span class="cap">total model cost with <code data-run="model">—</code></span></div>
   </section>
 
-  <section aria-labelledby="roles-h">
-    <h2 id="roles-h">Roles</h2>
+  <article class="story">
+    <section id="findings" aria-labelledby="findings-h">
+      <h2 id="findings-h">Where the <span data-run="labeled">—</span> roles land</h2>
+      <p id="bucket-lede">A title with "product" or "program" in it is not always a PM role. Jev sorts each posting into a bucket; click one to see its roles.</p>
+      <div id="buckets" class="buckets"></div>
+      <p class="legend"><span class="key ai"></span>AI roles <span class="key other"></span>PM or program, not AI <span class="key none"></span>Not a fit or low confidence</p>
+      <p id="toronto-note" class="callout"></p>
+    </section>
+
+    <section id="method" aria-labelledby="method-h">
+      <h2 id="method-h">How it works</h2>
+      <ol class="flow">
+        <li><span class="n">1</span><div><strong>Fetch.</strong> Pull every open role from <span data-run="boards">36</span> public Greenhouse, Ashby and Lever boards. Keep titles with "product" or "program".</div></li>
+        <li><span class="n">2</span><div><strong>Facts in code.</strong> Pay ranges, the remote flag and Toronto/Canada location fit come from regex.</div></li>
+        <li><span class="n">3</span><div><strong>Meaning from Jev.</strong> Six typed questions per posting (role kind, AI scope, seniority, ML required, hands-on AI skills required, engineering required), each with a probability.</div></li>
+        <li><span class="n">4</span><div><strong>Buckets in code.</strong> Code combines the answers into buckets. Anything under 0.6 confidence goes to review instead of guessing.</div></li>
+      </ol>
+      <blockquote class="pull">An early version asked the model for location. It labeled Vancouver roles as US-only, so location moved to code.</blockquote>
+    </section>
+
+    <section id="accuracy" aria-labelledby="accuracy-h">
+      <h2 id="accuracy-h">How good are the labels?</h2>
+      <p>I labeled 40 postings by hand and compared them with Jev. The question that matters most for this page is whether a role belongs in an AI bucket at all.</p>
+      <div class="eval-hero">
+        <div><span class="big">32 of 36</span><span class="cap">agreed on AI bucket or not (89%). The other 4 went to review.</span></div>
+        <div><span class="big">15 of 18</span><span class="cap">on the half I labeled blind, before seeing Jev's answers</span></div>
+      </div>
+      <figure class="eval-chart" aria-labelledby="eval-cap">
+        <figcaption id="eval-cap" class="fig-title">Agreement with my labels, per question (40 postings)</figcaption>
+        <div class="ebars">
+          <div class="erow"><span>ML background required</span><span class="track"><span class="fill" data-v="90"></span></span><b>36/40</b></div>
+          <div class="erow"><span>Engineering background required</span><span class="track"><span class="fill" data-v="85"></span></span><b>34/40</b></div>
+          <div class="erow"><span>AI or not AI</span><span class="track"><span class="fill" data-v="82"></span></span><b>33/40</b></div>
+          <div class="erow"><span>Role kind</span><span class="track"><span class="fill" data-v="78"></span></span><b>31/40</b></div>
+          <div class="erow"><span>Hands-on AI skills required</span><span class="track"><span class="fill" data-v="78"></span></span><b>31/40</b></div>
+          <div class="erow"><span>Seniority, exact level</span><span class="track"><span class="fill" data-v="68"></span></span><b>27/40</b></div>
+          <div class="erow"><span>Final bucket, exact</span><span class="track"><span class="fill" data-v="65"></span></span><b>26/40</b></div>
+        </div>
+      </figure>
+      <p class="note">Seniority was within one level on all 40. "AI or not" merges AI-native and AI-platform, which is how the buckets use it; the three-way answer matched 18 of 40. The set is stratified by bucket, so these numbers describe each bucket, not a random posting. <a href="https://github.com/gurn3k/ai-pm-job-radar/blob/main/eval/RESULTS.md">Full eval and disagreements</a>.</p>
+    </section>
+  </article>
+
+  <section id="roles" class="explorer" aria-labelledby="roles-h">
+    <h2 id="roles-h">Explore the roles</h2>
     <form id="filters" class="filters" role="search">
       <label class="grow">Search <input id="q" type="search" placeholder="Title, company, location" autocomplete="off"></label>
-      <label>Bucket <select id="bucket"><option value="">All target buckets</option><option value="*">Everything</option></select></label>
+      <label>Bucket <select id="bucket"><option value="">All PM and program buckets</option><option value="*">Everything</option></select></label>
       <label>Company <select id="company"><option value="">All</option></select></label>
+      <label>Sort <select id="sort"><option value="">Default</option><option value="pay">Pay, highest first</option><option value="company">Company A–Z</option></select></label>
       <label class="check"><input id="toronto" type="checkbox"> Doable from Toronto</label>
       <label class="check" title="Hands-on AI skills are a must-have, but an ML background is not"><input id="aiskills" type="checkbox"> Needs AI skills, not ML</label>
     </form>
     <p id="count" class="meta" aria-live="polite"></p>
     <div class="table-wrap">
-      <table>
+      <table id="table">
         <thead><tr>
-          <th scope="col">Company</th><th scope="col">Role</th><th scope="col">Bucket</th>
+          <th scope="col">Role</th><th scope="col">Bucket</th>
           <th scope="col">Level</th><th scope="col">Location</th><th scope="col" class="r">Pay (USD)</th>
           <th scope="col" class="r" title="Jev's probability that hands-on ML experience is a must-have">ML req.</th>
-          <th scope="col" class="r" title="Jev's probability that hands-on AI skills (building with AI tools or agents, required AI fluency) are a must-have">AI skills req.</th>
+          <th scope="col" class="r col-ai" title="Jev's probability that hands-on AI skills (building with AI tools or agents, required AI fluency) are a must-have">AI skills req.</th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
     <button id="more" type="button" hidden>Show more</button>
-  </section>
-
-  <section aria-labelledby="how-h" class="how">
-    <h2 id="how-h">How it works</h2>
-    <ol>
-      <li><strong>Fetch.</strong> Pull every open role from 36 public Greenhouse, Ashby and Lever boards; keep titles with "product" or "program".</li>
-      <li><strong>Facts in code.</strong> Pay ranges, the remote flag and Toronto/Canada location fit come from regex. An early version asked the model for location and it labeled Vancouver roles as US-only, so location moved to code.</li>
-      <li><strong>Meaning from Jev.</strong> Six typed questions per posting (role kind, AI scope, seniority, ML required, hands-on AI skills required, engineering required), each with a probability. Buckets combine the answers in code; anything under 0.6 confidence goes to review.</li>
-    </ol>
-    <p class="note">Labels are model judgments. On 40 hand-labeled postings, Jev agreed with me on whether a role belongs in an AI bucket for 32 of 36 (4 went to review); <a href="https://github.com/gurn3k/ai-pm-job-radar/blob/main/eval/RESULTS.md">full eval</a>. Pay is what the posting lists; blank means not listed.</p>
+    <p class="note">Labels are model judgments. Pay is what the posting lists; a dash means not listed. Each role links to the company's own careers page.</p>
   </section>
 
   <footer>
-    <p>Postings come from each company's public careers board and link back to it. Built on the how-to-jev skill by <a href="https://www.product-growth.com">Aakash Gupta</a> (MIT).</p>
+    <p>Postings come from each company's public careers board. Built on the how-to-jev skill by <a href="https://www.product-growth.com">Aakash Gupta</a> (MIT). Refreshed automatically every Monday.</p>
   </footer>
 </main>
 </body>
