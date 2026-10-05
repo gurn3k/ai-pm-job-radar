@@ -38,6 +38,7 @@ const group = (b) => (BUCKETS[b] || ["", "none"])[1];
 const hasAiSkills = (r) => typeof r.requires_hands_on_ai === "number";
 
 let roles = [];
+let run = null;
 let shown = PAGE;
 
 function renderRun(run) {
@@ -53,6 +54,20 @@ function renderRun(run) {
   set("p50", run.p50_ms ? run.p50_ms + " ms" : "—");
 }
 
+const SVGNS = "http://www.w3.org/2000/svg";
+const svgEl = (tag, attrs) => {
+  const n = document.createElementNS(SVGNS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  return n;
+};
+const SHORT = {
+  ai_pm_no_ml_required: "AI PM, no ML required", ai_pm_ml_required: "AI PM, ML required",
+  ai_program_or_tpm: "AI program / TPM", program_or_tpm_non_ai: "Program / TPM, not AI",
+  pm_non_ai: "PM, not AI", review: "Needs review", not_a_fit: "Not PM or program",
+};
+// Streams left to right in the band. They peel off right to left, so the last one is the top row.
+const LANES = ["not_a_fit", "review", "pm_non_ai", "program_or_tpm_non_ai", "ai_program_or_tpm", "ai_pm_ml_required", "ai_pm_no_ml_required"];
+
 function renderHero() {
   const ml = roles.filter((r) => r.bucket === "ai_pm_ml_required").length;
   const noMl = roles.filter((r) => r.bucket === "ai_pm_no_ml_required").length;
@@ -61,52 +76,103 @@ function renderHero() {
   $("headline").replaceChildren(
     "Only ", el("span", { class: "hl", text: `${fmt(ml)} of ${fmt(total)}` }),
     " AI product manager openings require hands-on ML experience.");
-
-  const max = Math.max(ml, noMl);
-  const bar = (label, n, muted) => {
-    const b = el("div", { class: "bar" });
-    b.style.width = (n / max) * 100 + "%";
-    const pct = Math.round((n / total) * 100);
-    const row = el("div", { class: "hrow" + (muted ? " muted" : ""), title: `${fmt(n)} roles, ${pct}% of AI PM openings` },
-      el("span", { class: "lab", text: label }),
-      el("span", { class: "track" }, b, el("span", { class: "val", text: fmt(n) })));
-    return row;
-  };
-  $("hero-bars").replaceChildren(bar("No ML background required", noMl, false), bar("ML background required", ml, true));
-  $("hero-note").textContent =
-    `${Math.round((noMl / total) * 100)}% want product judgment about AI, not a model-building background. ` +
-    `On my hand-labeled check, Jev's ML answer matched mine on 36 of 40 postings.`;
+  $("flow-note").textContent =
+    `The other ${Math.round((noMl / total) * 100)}% of AI PM openings want product judgment about AI, not a model-building background. ` +
+    `Jev's ML answer matched my hand labels on 36 of 40 postings.`;
 }
 
-function renderBuckets() {
+// Fig. 1: the run drawn to one scale, from every scanned role down to the buckets.
+let flowW = 0;
+function renderFlow(run, animate) {
+  const box = $("flow");
+  const W = box.clientWidth;
+  if (!W || W === flowW) return;
+  flowW = W;
+  const narrow = W < 560;
+  const scanned = run.scanned || roles.length;
+  const k = W / scanned;
+  $("flow-scale").textContent = fmt(Math.round(scanned / W));
+
   const counts = {};
   for (const r of roles) counts[r.bucket] = (counts[r.bucket] || 0) + 1;
-  const max = Math.max(...Object.values(counts));
-  const box = $("buckets");
-  for (const [key, [label, g]] of Object.entries(BUCKETS)) {
-    const n = counts[key] || 0;
-    const bar = el("span", { class: "bar" });
-    bar.style.width = (n / max) * 100 + "%";
-    const btn = el("button", { type: "button", class: `brow g-${g}`, title: `Show the ${fmt(n)} roles in this bucket` },
-      el("span", { class: "blab", text: label }), el("span", { class: "btrack" }, bar), el("span", { class: "bcount", text: fmt(n) }));
-    btn.addEventListener("click", () => {
-      $("bucket").value = key;
-      update();
-      $("roles").scrollIntoView();
-    });
-    box.append(btn);
-  }
-  const ai = roles.filter((r) => group(r.bucket) === "ai").length;
-  const target = roles.filter((r) => TARGET.has(r.bucket)).length;
-  $("bucket-lede").textContent =
-    `A title with "product" or "program" in it is not always a PM role. ${fmt(target)} of ${fmt(roles.length)} are real ` +
-    `PM or program roles, and ${fmt(ai)} of those are on AI products. Click a bucket to see its roles.`;
+  const t = LANES.map((b) => Math.max((counts[b] || 0) * k, 2));
+  const band = t.reduce((a, b) => a + b, 0);
 
+  const step = narrow ? 58 : 46;
+  const barY = 36, barH = 10;
+  const yDrop = barY + barH + 24, yKept = yDrop + step, yCode = yKept + step, yJev = yCode + step;
+  const yP = yJev + 72, gap = narrow ? 26 : 24, R0 = narrow ? 20 : 28;
+  const xs = [];
+  LANES.forEach((_, i) => xs.push(i ? xs[i - 1] + t[i - 1] + gap : 0));
+  const last = LANES.length - 1;
+  const cx = xs[last] + t[last] + R0, cy = yP, xEnd = cx + 20;
+  const radius = (i) => cx - (xs[i] + t[i]);
+  const H = cy + radius(0) + t[0] + 18;
+  box.style.height = H + "px";
+
+  const s = svgEl("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, "aria-hidden": "true" });
+  if (animate) s.classList.add("reveal");
+  s.append(svgEl("rect", { class: "s-drop", x: 0, y: barY, width: W, height: barH, rx: 2 }));
+  s.append(svgEl("rect", { class: "s-code", x: 0, y: barY, width: band, height: yJev - barY }));
+  s.append(svgEl("line", { class: "tick-code", x1: -6, x2: band + 12, y1: yCode, y2: yCode }));
+  s.append(svgEl("line", { class: "tick-jev", x1: -6, x2: band + 12, y1: yJev, y2: yJev }));
+
+  const labels = [];
+  const label = (y, cls, kids, delay, top) => {
+    const n = el("div", { class: `fl ${cls}${top ? " top" : ""}` }, ...kids);
+    n.style.top = y + "px";
+    n.style.left = (top ? 0 : band + 18) + "px";
+    n.style.maxWidth = (W - (top ? 0 : band + 18)) + "px";
+    n.style.setProperty("--d", delay + "s");
+    labels.push(n);
+  };
+  const num = (v) => el("span", { class: "num", text: v });
+  label(4, "head", [num(fmt(scanned)), ` open roles on ${run.boards} public careers boards`], 0, true);
+  label(yDrop, "muted", [`${fmt(scanned - roles.length)} dropped by the title filter in code: not a product, program or TPM title`], 0.2);
+  label(yKept, "head", [num(fmt(roles.length)), " product, program and TPM titles kept"], 0.35);
+  label(yCode, "station code", [el("b", { text: "CODE" }), "pay range · remote flag · Toronto/Canada fit"], 0.5);
+  label(yJev, "station jev", [el("b", { text: "JEV" }), `6 questions per role · ${run.seconds ? run.seconds.toFixed(1) + " s" : "—"} · $${run.cost_usd.toFixed(2)}`], 0.65);
+
+  const ym = (yJev + yP) / 2;
+  let c = 0;
+  const streams = {};
+  LANES.forEach((b, i) => {
+    const w = t[i], x = xs[i], R = radius(i), n = counts[b] || 0;
+    const d = `M${c},${yJev} C${c},${ym} ${x},${ym} ${x},${cy} ` +
+      `A${R + w},${R + w} 0 0 0 ${cx},${cy + R + w} L${xEnd},${cy + R + w} L${xEnd},${cy + R} L${cx},${cy + R} ` +
+      `A${R},${R} 0 0 1 ${x + w},${cy} C${x + w},${ym} ${c + w},${ym} ${c + w},${yJev} Z`;
+    c += w;
+    const p = svgEl("path", { class: `stream s-${group(b)}`, d });
+    p.append(svgEl("title", {}));
+    p.firstChild.textContent = `${BUCKETS[b][0]}: ${fmt(n)} roles`;
+    s.append(p);
+    streams[b] = p;
+
+    const name = narrow || W - xEnd < 330 ? SHORT[b] : BUCKETS[b][0];
+    const btn = el("button", { type: "button", class: `fl g-${group(b)}`, title: `Show the ${fmt(n)} roles in this bucket` }, name, num(fmt(n)));
+    btn.style.top = cy + R + w / 2 + "px";
+    btn.style.left = xEnd + 10 + "px";
+    btn.style.setProperty("--d", 0.85 + (last - i) * 0.06 + "s");
+    const on = (v) => { box.classList.toggle("hovering", v); p.classList.toggle("on", v); btn.classList.toggle("on", v); };
+    const pick = () => { $("bucket").value = b; update(); $("roles").scrollIntoView(); };
+    for (const n2 of [btn, p]) {
+      n2.addEventListener("mouseenter", () => on(true));
+      n2.addEventListener("mouseleave", () => on(false));
+      n2.addEventListener("click", pick);
+    }
+    btn.addEventListener("focus", () => on(true));
+    btn.addEventListener("blur", () => on(false));
+    labels.push(btn);
+  });
+  box.replaceChildren(s, ...labels);
+}
+
+function renderToronto() {
   const tor = roles.filter((r) => FIT[r.location_fit]);
   const torTarget = tor.filter((r) => TARGET.has(r.bucket)).length;
   $("toronto-note").replaceChildren(
     el("strong", { text: "From Toronto: " }),
-    `${fmt(tor.length)} roles can be done from Toronto or elsewhere in Canada, and ${fmt(torTarget)} of those are PM or program roles. `,
+    `${fmt(tor.length)} roles can be done from Toronto or elsewhere in Canada, and ${fmt(torTarget)} of those are PM or program roles. ` +
     `Most of these companies hire in the US.`);
 }
 
@@ -179,13 +245,17 @@ async function main() {
     if (!res.ok) throw new Error(res.status);
     const data = await res.json();
     roles = data.roles;
-    renderRun(data.run);
+    run = data.run;
+    renderRun(run);
   } catch (e) {
     $("count").textContent = "Could not load the latest run.";
+    $("flow").textContent = "Could not load the latest run.";
     return;
   }
   renderHero();
-  renderBuckets();
+  renderFlow(run, true);
+  new ResizeObserver(() => renderFlow(run, false)).observe($("flow"));
+  renderToronto();
   fillSelects();
   // The AI-skills question was added after the first runs; hide its filter and column until the data has it.
   if (!roles.some(hasAiSkills)) {
