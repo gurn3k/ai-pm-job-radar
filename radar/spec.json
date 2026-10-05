@@ -54,6 +54,14 @@
         "false": "No must-have hands-on ML experience: AI knowledge is optional, preferred, conversational, or can be learned on the job, or AI is not mentioned."
       }
     },
+    "requires_hands_on_ai": {
+      "type": "noul",
+      "instructions": "Does the posting require hands-on, practical AI skills as a must-have? This is broader than an ML background: it covers building or shipping things with AI (agents, automations, LLM-powered tools or features), direct experience running AI or ML products, programs or data work, or a stated requirement to be fluent with AI tools that the hiring process will assess. Hands-on ML model work also counts. Preferred or nice-to-have qualifications do not count. Company mission statements about AI, or general curiosity about AI, do not count.",
+      "criteria": {
+        "true": "A must-have is practical, hands-on AI experience or required AI fluency, including ML model work.",
+        "false": "AI is optional, preferred, only mentioned in company text, or not mentioned."
+      }
+    },
     "requires_engineering_background": {
       "type": "noul",
       "instructions": "Does the posting require a computer science degree or prior work as a software engineer as a must-have? Being comfortable with technical concepts or working with engineers does not count.",
@@ -202,6 +210,7 @@
     "seniority",
     "location_fit",
     "requires_ml_background",
+    "requires_hands_on_ai",
     "pay_low",
     "pay_high"
   ]

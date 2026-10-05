@@ -44,6 +44,7 @@
       <label>Bucket <select id="bucket"><option value="">All target buckets</option><option value="*">Everything</option></select></label>
       <label>Company <select id="company"><option value="">All</option></select></label>
       <label class="check"><input id="toronto" type="checkbox"> Doable from Toronto</label>
+      <label class="check" title="Hands-on AI skills are a must-have, but an ML background is not"><input id="aiskills" type="checkbox"> Needs AI skills, not ML</label>
     </form>
     <p id="count" class="meta" aria-live="polite"></p>
     <div class="table-wrap">
@@ -52,6 +53,7 @@
           <th scope="col">Company</th><th scope="col">Role</th><th scope="col">Bucket</th>
           <th scope="col">Level</th><th scope="col">Location</th><th scope="col" class="r">Pay (USD)</th>
           <th scope="col" class="r" title="Jev's probability that hands-on ML experience is a must-have">ML req.</th>
+          <th scope="col" class="r" title="Jev's probability that hands-on AI skills (building with AI tools or agents, required AI fluency) are a must-have">AI skills req.</th>
         </tr></thead>
         <tbody id="rows"></tbody>
       </table>
@@ -64,9 +66,9 @@
     <ol>
       <li><strong>Fetch.</strong> Pull every open role from 36 public Greenhouse, Ashby and Lever boards; keep titles with "product" or "program".</li>
       <li><strong>Facts in code.</strong> Pay ranges, the remote flag and Toronto/Canada location fit come from regex. An early version asked the model for location and it labeled Vancouver roles as US-only, so location moved to code.</li>
-      <li><strong>Meaning from Jev.</strong> Five typed questions per posting (role kind, AI scope, seniority, ML required, engineering required), each with a probability. Buckets combine the answers in code; anything under 0.6 confidence goes to review.</li>
+      <li><strong>Meaning from Jev.</strong> Six typed questions per posting (role kind, AI scope, seniority, ML required, hands-on AI skills required, engineering required), each with a probability. Buckets combine the answers in code; anything under 0.6 confidence goes to review.</li>
     </ol>
-    <p class="note">Labels are model judgments. So far 40 roles have been checked by hand; no accuracy figure is claimed yet. Pay is what the posting lists; blank means not listed.</p>
+    <p class="note">Labels are model judgments. On 40 hand-labeled postings, Jev agreed with me on whether a role belongs in an AI bucket for 32 of 36 (4 went to review); <a href="https://github.com/gurn3k/ai-pm-job-radar/blob/main/eval/RESULTS.md">full eval</a>. Pay is what the posting lists; blank means not listed.</p>
   </section>
 
   <footer>

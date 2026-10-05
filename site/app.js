@@ -98,11 +98,13 @@ function filtered() {
   const bucket = $("bucket").value;
   const company = $("company").value;
   const toronto = $("toronto").checked;
+  const aiSkills = $("aiskills").checked;
   return roles.filter((r) => {
     if (bucket === "" && !TARGET.has(r.bucket)) return false;
     if (bucket && bucket !== "*" && r.bucket !== bucket) return false;
     if (company && r.company !== company) return false;
     if (toronto && !FIT[r.location_fit]) return false;
+    if (aiSkills && !(r.requires_hands_on_ai > 0.5 && r.requires_ml_background <= 0.5)) return false;
     if (q && !`${r.title} ${r.company} ${r.location} ${r.department}`.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -116,7 +118,7 @@ function row(r) {
   if (FIT[r.location_fit]) loc.append(el("span", { class: "sub can", text: FIT[r.location_fit] }));
   else if (r.remote_listed) loc.append(el("span", { class: "sub", text: "Remote listed" }));
   const pay = r.pay_low && r.pay_high ? `${money(r.pay_low)}–${money(r.pay_high)}` : r.pay_low ? money(r.pay_low) : "—";
-  const ml = typeof r.requires_ml_background === "number" ? Math.round(r.requires_ml_background * 100) + "%" : "—";
+  const pctOf = (v) => (typeof v === "number" ? Math.round(v * 100) + "%" : "—");
   return el("tr", {},
     el("td", { class: "co", text: r.company }),
     el("td", {}, title, r.department ? el("span", { class: "sub", text: r.department }) : null),
@@ -124,7 +126,8 @@ function row(r) {
     el("td", { text: level(r.seniority) || "—" }),
     loc,
     el("td", { class: "r", text: pay }),
-    el("td", { class: "r", text: ml }));
+    el("td", { class: "r", text: pctOf(r.requires_ml_background) }),
+    el("td", { class: "r", text: pctOf(r.requires_hands_on_ai) }));
 }
 
 function update(resetPage = true) {
@@ -132,7 +135,7 @@ function update(resetPage = true) {
   const list = filtered();
   const body = $("rows");
   body.replaceChildren(...list.slice(0, shown).map(row));
-  if (!list.length) body.append(el("tr", {}, el("td", { colspan: "7", text: "No roles match these filters." })));
+  if (!list.length) body.append(el("tr", {}, el("td", { colspan: "8", text: "No roles match these filters." })));
   $("count").textContent = `${fmt(list.length)} role${list.length === 1 ? "" : "s"}` + (list.length > shown ? `, showing ${fmt(shown)}` : "");
   $("more").hidden = list.length <= shown;
 }
@@ -151,7 +154,9 @@ async function main() {
   renderFinding();
   renderBuckets();
   fillSelects();
-  for (const id of ["q", "bucket", "company", "toronto"]) $(id).addEventListener("input", () => update());
+  // The AI-skills question was added after the first runs; hide its filter until the data has it.
+  if (!roles.some((r) => typeof r.requires_hands_on_ai === "number")) $("aiskills").closest("label").hidden = true;
+  for (const id of ["q", "bucket", "company", "toronto", "aiskills"]) $(id).addEventListener("input", () => update());
   $("filters").addEventListener("submit", (e) => e.preventDefault());
   $("more").addEventListener("click", () => { shown += PAGE; update(false); });
   update();

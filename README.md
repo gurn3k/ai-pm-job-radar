@@ -41,11 +41,12 @@ radar/spec.json     the questions Jev answers per role, plus bucket rules
 scripts/jev.py      runs the spec over every role, caches answers, writes CSV + summary
 scripts/export_site.py  writes site/data.json (posting facts + labels only, no descriptions)
 site/               static page on Vercel: no server, no API key, strict CSP
+eval/               40 hand-labeled postings, the scorer, and RESULTS.md
 ```
 
 **Code computes facts.** Pay ranges, the remote flag and where a Toronto-based person stands (`remote_canada`, `toronto_ontario_office`, `canada_other_city`, `canada_unspecified`, `outside_canada`) come from regex over the posting. The first version asked Jev for location, and it labeled four "Vancouver, BC" roles as US-only. A location string is a fact, so I moved it into code.
 
-**Jev judges meaning.** There are five typed questions per posting, each answered with a probability:
+**Jev judges meaning.** There are six typed questions per posting, each answered with a probability:
 
 | Question | Type | Why it can't be a keyword rule |
 |---|---|---|
@@ -53,6 +54,7 @@ site/               static page on Vercel: no server, no API key, strict CSP
 | `ai_scope` | choice of 4 | Every posting at an AI company mentions AI; the question is whether *this team's* product is AI |
 | `seniority` | 5-level score | Titles are inconsistent across companies |
 | `requires_ml_background` | yes/no | Separates "must have shipped ML models" from "comfortable discussing AI" |
+| `requires_hands_on_ai` | yes/no | Catches roles that screen for building with AI tools or agents, or required AI fluency, without asking for an ML background |
 | `requires_engineering_background` | yes/no | Separates a CS-degree requirement from working with engineers |
 
 Buckets combine the answers in code with a confidence floor of 0.6, and anything below it goes to `review`. All questions and thresholds live in `radar/spec.json`.
@@ -63,9 +65,30 @@ Buckets combine the answers in code with a confidence floor of 0.6, and anything
 - **Company boilerplate is excluded by instruction.** `ai_scope` tells Jev to ignore mission statements and benefits text that appear on every posting.
 - **Iteration was measured on a sample first.** Each change was tested on a 40-role random sample (about half a cent) and a 55-role Canada set before the full run. One sample error, an "AI & LLM conversational fluency" line scored as a hard ML requirement, led to a sharper `requires_ml_background` definition.
 
-## Evaluation status
+## Evaluation
 
-The number of roles checked by hand is stated here; no accuracy figure is claimed. So far: a 40-role sample read by hand, with 1 clear error found and fixed, and 10 of 10 tricky location strings correct after the move to code. Next: 40 hand-labeled roles in `eval/` with per-bucket accuracy.
+I labeled 40 postings by hand and scored Jev's answers against mine (`eval/`, full results in [`eval/RESULTS.md`](eval/RESULTS.md)). The sample takes a fixed number of postings from each bucket, so rare buckets get enough rows to check. These are per-bucket numbers, not the accuracy on a random posting.
+
+| | All 40 | Labeled blind (21-40) |
+|---|---|---|
+| In an AI target bucket or not (rows not sent to review) | 32/36 | 15/18 |
+| Exact bucket (rows not sent to review) | 26/36 | 11/18 |
+| AI vs not AI (`ai_scope`, native and platform merged) | 33/40 | 16/20 |
+| `role_kind` | 31/40 | 15/20 |
+| Seniority within one level | 40/40 | 20/20 |
+| `requires_ml_background` (strict) | 36/40 | 17/20 |
+| `requires_hands_on_ai` | 31/40 | 14/20 |
+| `requires_engineering_background` | 34/40 | 17/20 |
+
+Model `jev-1.13.0`. Answers come from the 2026-10-04 run, except `requires_hands_on_ai`, which comes from a 2026-10-05 re-run on the same 40 postings ($0.005).
+
+**How the labels were made.** Postings 21-40 were labeled without seeing Jev's answers. Postings 1-20 were labeled the same way, then 9 of their labels were revised after I saw Jev's answers and settled what "AI scope" means: *this team builds AI*, not *this is an AI company*. The originals are kept in `eval/labels_batch1_before_review.csv`. Treat the blind column as the honest one.
+
+**What the eval changed.** On `requires_ml_background`, 12 of the first disagreements were me saying yes where Jev said no. The posting text showed I was answering a broader question: does the role need hands-on AI skills? That's a different question from whether it needs an ML background, so the spec now asks both. `requires_hands_on_ai` was added after this, and its wording was written after I had seen my own labels, so treat its 31/40 as a first read rather than a held-out score. I then relabeled the strict ML question for the 16 postings where I'd said yes.
+
+**Where Jev and I still disagree.** Most misses don't change the bucket. They're TPM vs program manager, AI-native vs AI-platform, and seniority off by one level. The ones that do change the bucket are borderline AI-scope calls and 4 strict-ML calls that move a posting between the two AI PM buckets, plus the 4 postings Jev sent to review, which the table leaves out.
+
+**Repeatability.** Re-running Jev on the same 40 postings gave the same `role_kind` and `ai_scope` on all 40, and the same bucket on 38. Both changes were near a cutoff: an ML score of 0.53 became 0.49, and a confidence of 0.63 became 0.54.
 
 ## Run it yourself
 

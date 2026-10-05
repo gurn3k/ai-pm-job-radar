@@ -23,7 +23,7 @@ NAMES = {
 
 FIELDS = ["company", "title", "location", "department", "url", "pay_low", "pay_high",
           "remote_listed", "location_fit", "role_kind", "ai_scope", "seniority",
-          "requires_ml_background", "requires_engineering_background"]
+          "requires_ml_background", "requires_hands_on_ai", "requires_engineering_background"]
 
 
 def main():
@@ -57,7 +57,7 @@ def main():
         out = {k: r.get(k) for k in FIELDS}
         out["company"] = NAMES.get(r["company"], r["company"].capitalize())
         out["bucket"] = r.get("_bucket")
-        for k in ("requires_ml_background", "requires_engineering_background"):
+        for k in ("requires_ml_background", "requires_hands_on_ai", "requires_engineering_background"):
             if isinstance(out[k], float):
                 out[k] = round(out[k], 2)
         if not str(out["url"] or "").startswith("https://"):

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radar Eval Labeler</title>
+<style>
+  :root { --bg:#fafaf8; --fg:#1d1d1b; --muted:#6b6b66; --line:#deded8; --card:#fff; --accent:#2f5bd3; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#161615; --fg:#ececea; --muted:#9a9a94; --line:#33332f; --card:#1f1f1d; --accent:#7f9ef0; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui, sans-serif; }
+  .wrap { display:grid; grid-template-columns:1fr 420px; gap:20px; max-width:1300px; margin:0 auto; padding:16px; }
+  @media (max-width:900px) { .wrap { grid-template-columns:1fr; } }
+  header { grid-column:1/-1; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  header h1 { font-size:18px; margin:0 auto 0 0; }
+  button { font:inherit; padding:6px 12px; border:1px solid var(--line); background:var(--card); color:var(--fg); border-radius:6px; cursor:pointer; }
+  button.primary { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px; }
+  .meta { color:var(--muted); font-size:13px; }
+  .desc { white-space:pre-wrap; max-height:75vh; overflow:auto; font-size:14px; }
+  fieldset { border:none; padding:0; margin:0 0 14px; }
+  legend { font-weight:600; margin-bottom:4px; }
+  label.opt { display:block; padding:3px 0; font-size:14px; }
+  label.opt small { color:var(--muted); display:block; margin-left:22px; }
+  textarea { width:100%; font:inherit; background:var(--bg); color:var(--fg); border:1px solid var(--line); border-radius:6px; }
+  .dots { display:flex; flex-wrap:wrap; gap:4px; grid-column:1/-1; }
+  .dots span { width:22px; height:22px; font-size:11px; display:grid; place-items:center; border-radius:4px; border:1px solid var(--line); cursor:pointer; }
+  .dots span.done { background:var(--accent); color:#fff; border-color:var(--accent); }
+  .dots span.cur { outline:2px solid var(--fg); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Radar eval: label blind, Jev's answers are hidden</h1>
+    <span id="count" class="meta"></span>
+    <button id="prev">Prev</button><button id="next">Next</button>
+    <button id="dl" class="primary">Download labels.csv</button>
+  </header>
+  <div class="dots" id="dots"></div>
+  <div class="card"><h2 id="title" style="margin:0 0 4px;font-size:20px"></h2><div id="meta" class="meta"></div>
+    <p><a id="url" target="_blank" rel="noopener">Open posting</a></p><div id="desc" class="desc"></div></div>
+  <form class="card" id="form"></form>
+</div>
+<script>
+const ITEMS = /*ITEMS*/[];
+const SPEC = /*SPEC*/{};
+const KEY = "radar-eval-labels";
+const QS = Object.keys(SPEC);
+let labels = {};
+try { labels = JSON.parse(localStorage.getItem(KEY) || "{}"); } catch (e) {}
+let cur = 0;
+
+function options(q) {
+  const s = SPEC[q];
+  if (s.type === "choice") return Object.entries(s.criteria).map(([v, d]) => [v, v, d]);
+  if (s.type === "score") return s.criteria.map((d, i) => [String(i + 1), `${i + 1}. ${d}`, ""]);
+  return [["yes", "yes", s.criteria.true], ["no", "no", s.criteria.false]];
+}
+function done(id) { const l = labels[id]; return l && QS.every(q => l[q]); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(labels)); } catch (e) {} }
+
+function render() {
+  const it = ITEMS[cur], l = labels[it.id] || {};
+  document.getElementById("title").textContent = `#${it.id} ${it.title}`;
+  document.getElementById("meta").textContent = [it.company, it.department, it.location].filter(Boolean).join(" · ");
+  const a = document.getElementById("url"); a.href = it.url;
+  document.getElementById("desc").textContent = it.description;
+  const f = document.getElementById("form"); f.innerHTML = "";
+  for (const q of QS) {
+    const fs = document.createElement("fieldset");
+    fs.innerHTML = `<legend>${q}</legend>`;
+    const help = document.createElement("div"); help.className = "meta"; help.textContent = SPEC[q].instructions; fs.appendChild(help);
+    for (const [v, text, d] of options(q)) {
+      const lab = document.createElement("label"); lab.className = "opt";
+      const r = document.createElement("input"); r.type = "radio"; r.name = q; r.value = v; r.checked = l[q] === v;
+      r.onchange = () => { (labels[it.id] ||= {})[q] = v; save(); dots(); };
+      lab.append(r, " " + text);
+      if (d) { const sm = document.createElement("small"); sm.textContent = d; lab.appendChild(sm); }
+      fs.appendChild(lab);
+    }
+    f.appendChild(fs);
+  }
+  const nl = document.createElement("label"); nl.innerHTML = "<legend>note (optional)</legend>";
+  const ta = document.createElement("textarea"); ta.rows = 3; ta.value = l.note || "";
+  ta.oninput = () => { (labels[it.id] ||= {}).note = ta.value; save(); };
+  nl.appendChild(ta); f.appendChild(nl);
+  dots(); window.scrollTo(0, 0);
+}
+function dots() {
+  const d = document.getElementById("dots"); d.innerHTML = "";
+  ITEMS.forEach((it, i) => {
+    const s = document.createElement("span"); s.textContent = it.id;
+    s.className = (done(it.id) ? "done " : "") + (i === cur ? "cur" : "");
+    s.onclick = () => { cur = i; render(); }; d.appendChild(s);
+  });
+  document.getElementById("count").textContent = `${ITEMS.filter(it => done(it.id)).length} / ${ITEMS.length} labeled`;
+}
+function csvCell(v) { v = String(v ?? ""); return /[",\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v; }
+document.getElementById("prev").onclick = () => { cur = (cur + ITEMS.length - 1) % ITEMS.length; render(); };
+document.getElementById("next").onclick = () => { cur = (cur + 1) % ITEMS.length; render(); };
+document.getElementById("dl").onclick = () => {
+  const cols = ["id", "url", ...QS, "note"];
+  const lines = [cols.join(",")].concat(ITEMS.map(it => cols.map(c =>
+    csvCell(c === "id" ? it.id : c === "url" ? it.url : (labels[it.id] || {})[c])).join(",")));
+  const blob = new Blob([lines.join("\n") + "\n"], { type: "text/csv" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "labels.csv"; a.click();
+};
+render();
+</script>
+</body>
+</html>
