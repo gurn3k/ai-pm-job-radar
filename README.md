@@ -6,6 +6,8 @@ I built this for my own search: I'm a Toronto-based program manager targeting AI
 
 **Live:** [ai-pm-job-radar.vercel.app](https://ai-pm-job-radar.vercel.app), every labeled role with filters for bucket, company and Toronto fit.
 
+![The live radar: the headline finding above a figure that narrows 8,427 open roles to the ones kept and labeled](docs/images/screenshot.png)
+
 ## First full run (2026-10-02)
 
 The live page refreshes every Monday (see `scripts/weekly_refresh.sh`); these are the numbers from the first run.
