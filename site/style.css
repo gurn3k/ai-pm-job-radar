@@ -161,13 +161,18 @@ table.no-ai .col-ai { display: none; }
 
 footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--rule); color: var(--ink-soft); font-size: 0.85rem; }
 /* Maker signature, shared across gurn3k builds: copyright left, wordmark right.
-   The wordmark is a mask filled with ink, so it follows dark mode; it turns
-   link blue on hover because it's the only link in the row. */
+   The wordmark is two masks: "gurn" in ink and "3k" in link blue, the one
+   place blue may appear outside Jev's judgments. Both follow dark mode, and on
+   hover the whole wordmark turns blue. */
 .signature { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; margin-top: 12px; }
 .maker { display: inline-flex; align-items: center; gap: 8px; }
 .maker a { display: block; color: var(--ink); }
 .maker a:hover { color: var(--jev-ink); }
-.maker-mark { display: block; width: 52px; height: 14px; background: currentColor; -webkit-mask: url(gurn3k.svg) center / contain no-repeat; mask: url(gurn3k.svg) center / contain no-repeat; }
+.maker-mark { position: relative; display: block; width: 52px; height: 14px; }
+/* Two layers in the brand kit's split: "gurn" in ink, "3k" in link blue. */
+.maker-mark::before, .maker-mark::after { content: ""; position: absolute; inset: 0; }
+.maker-mark::before { background: currentColor; -webkit-mask: url(gurn3k-gurn.svg) center / contain no-repeat; mask: url(gurn3k-gurn.svg) center / contain no-repeat; }
+.maker-mark::after { background: var(--jev-ink); -webkit-mask: url(gurn3k-3k.svg) center / contain no-repeat; mask: url(gurn3k-3k.svg) center / contain no-repeat; }
 
 @media (max-width: 760px) {
   body { font-size: 16px; }
