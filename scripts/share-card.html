@@ -1,0 +1,44 @@
+<!doctype html>
+<!--
+  Source for site/share.png, the 1200×630 link-preview image.
+  No weekly numbers on purpose: the page refreshes every Monday and a
+  cached preview image would go stale.
+  Render with Chrome:
+    chrome --headless=new --hide-scrollbars --force-device-scale-factor=1 \
+      --window-size=1200,630 --screenshot=site/share.png scripts/share-card.html
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; }
+  body { width: 1200px; height: 630px; background: #faf9f5; color: #1a1915; font-family: -apple-system, "Segoe UI", Inter, Roboto, sans-serif; position: relative; overflow: hidden; }
+  .serif { font-family: "Iowan Old Style", "Charter", "Bitstream Charter", "Source Serif Pro", "Sitka Text", Cambria, Georgia, serif; }
+  .brand { position: absolute; left: 80px; top: 56px; display: flex; align-items: center; gap: 14px; font-weight: 700; font-size: 30px; }
+  .brand svg { width: 36px; height: 36px; color: #2a78d6; }
+  .main { position: absolute; left: 80px; top: 142px; width: 740px; }
+  .kicker { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 17px; letter-spacing: 0.04em; text-transform: uppercase; color: #55534c; }
+  h1 { margin-top: 18px; font-weight: 700; font-size: 54px; line-height: 1.08; letter-spacing: -0.015em; }
+  h1 .hl { color: #1c5cab; }
+  .dek { margin-top: 22px; font-size: 23px; line-height: 1.45; color: #55534c; }
+  .byline { position: absolute; left: 80px; bottom: 44px; font-size: 19px; color: #55534c; }
+  .byline strong { color: #1a1915; font-weight: 600; }
+  .mark { position: absolute; right: 70px; top: 150px; width: 330px; height: 330px; color: #2a78d6; }
+  .rule { position: absolute; left: 80px; right: 80px; bottom: 92px; border-top: 1px solid #e4e1d8; }
+</style>
+</head>
+<body>
+  <div class="brand serif">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width="2.5"/><circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" stroke-width="1.5" opacity=".5"/><path d="M16 16 L25.2 6.8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/><circle cx="21" cy="20" r="2.2" fill="currentColor"/></svg>
+    AI PM Job Radar
+  </div>
+  <div class="main">
+    <p class="kicker">Refreshed every Monday</p>
+    <h1 class="serif">Which AI product manager openings require <span class="hl">hands-on ML experience?</span></h1>
+    <p class="dek serif">Every product, program and TPM opening at 36 AI and tech companies, labeled each week.</p>
+  </div>
+  <svg class="mark" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="currentColor" stroke-width=".6" opacity=".35"/><circle cx="16" cy="16" r="7" fill="none" stroke="currentColor" stroke-width=".4" opacity=".25"/><path d="M16 16 L25.2 6.8" stroke="currentColor" stroke-width=".7" stroke-linecap="round" opacity=".55"/><circle cx="21" cy="20" r="1.1" fill="currentColor"/><circle cx="10" cy="11" r=".7" fill="currentColor" opacity=".5"/><circle cx="12" cy="23" r=".7" fill="currentColor" opacity=".5"/></svg>
+  <div class="rule"></div>
+  <p class="byline">By <strong>Gurnek Khaira</strong></p>
+</body>
+</html>
