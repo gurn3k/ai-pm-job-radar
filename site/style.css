@@ -121,6 +121,14 @@ button.fl.g-none { color: var(--ink-soft); }
 .erow .track { height: 10px; background: var(--rule); border-radius: 0 4px 4px 0; }
 .erow .fill { display: block; height: 100%; width: 0; background: var(--jev); border-radius: 0 4px 4px 0; }
 .erow b { text-align: right; font-family: var(--mono); font-size: 0.86rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+/* Fig. 2, the run ledger: facts in mono, the latest run in full ink, missed Mondays as their own row. */
+table.ledger { border-top: 1px solid var(--rule-strong); }
+.ledger tbody tr:hover { background: none; }
+.ledger td { color: var(--ink-soft); }
+.ledger tr.latest td { color: var(--ink); font-weight: 600; }
+.ledger .when { display: block; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.ledger td .sub { font-weight: 400; font-size: 0.76rem; }
+.ledger tr.gap td { padding: 8px 10px; font-size: 0.82rem; font-style: italic; color: var(--ink-faint); background: repeating-linear-gradient(-45deg, transparent 0 6px, var(--rule) 6px 7px); }
 .note { color: var(--ink-soft); font-size: 0.88rem; line-height: 1.55; margin-top: 24px; }
 
 /* Explorer */
@@ -198,4 +206,15 @@ footer { margin-top: 64px; padding-top: 16px; border-top: 1px solid var(--rule);
   td.r { text-align: left; }
   td[data-label]::before { content: attr(data-label) " "; color: var(--ink-soft); font-family: var(--sans); font-size: 0.8rem; }
   td.empty-sm { display: none; }
+
+  /* The ledger stays a table on phones, with its widest columns dropped. */
+  table.ledger { display: table; }
+  .ledger thead { display: table-header-group; }
+  .ledger tbody { display: table-row-group; }
+  .ledger tr { display: table-row; padding: 0; }
+  .ledger th, .ledger td { display: table-cell; padding: 10px 4px; border-bottom: 1px solid var(--rule); }
+  .ledger th { white-space: normal; }
+  .ledger td.r { text-align: right; }
+  .ledger .wide { display: none; }
+  .ledger tr.gap td { padding: 8px 4px; }
 }

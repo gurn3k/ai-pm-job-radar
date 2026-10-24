@@ -63,6 +63,13 @@ The story column (masthead, Fig. 1, method, accuracy) is capped at 760px. The ro
 - Hovering a stream or its label dims the others. Clicking filters the roles table.
 - Entrance: the SVG reveals top to bottom and the labels fade in, staggered. Both are off under `prefers-reduced-motion`.
 
+### Fig. 2, the run ledger
+- Built by `renderLedger()` from `data.json`'s `history`, one row per run, newest first. `scripts/export_site.py` appends each run's summary row; a rerun on the same date replaces it.
+- History starts at the first scheduled run (2026-10-05). The first full run and the setup test aren't in it.
+- Columns: run date (with Scheduled or By hand), scanned, kept, AI roles, ML required (of AI PM roles), Toronto PM roles (of roles doable from Canada), time, cost. Every value in mono; the latest run in full ink, older runs in `ink-soft`. No blue: the counts are Jev's, but the table isn't a judgment.
+- A Monday 6+ days after a run, with no run of its own, gets a hatched "No run on …" row. That matches the workflow, which skips a Monday within 6 days of a run on purpose, so a deliberate skip isn't shown as a miss.
+- On phones it stays a table with scanned, kept, time and cost dropped.
+
 ### Source tags (borrowed from The Annotated Report)
 Every figure and stat block ends with a mono `Source:` line naming `data.json`, `eval/RESULTS.md` or the README.
 
@@ -85,5 +92,5 @@ Filters in one row above the table. Rows show company (small caps), title (linke
 - Don't use blue for anything that isn't Jev's judgment.
 - Don't give the seven buckets seven hues.
 - Don't state an overall accuracy rate, or any eval number without its sample.
-- Don't add week-over-week claims until `data.json` keeps history.
+- Don't make a week-over-week claim from anything but `data.json`'s `history`, and don't hide a missed week.
 - Don't add external fonts, scripts or images without updating the CSP in `site/vercel.json` on purpose.
