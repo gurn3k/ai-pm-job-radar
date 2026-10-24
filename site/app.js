@@ -176,6 +176,47 @@ function renderToronto() {
     `Most of these companies hire in the US.`);
 }
 
+// Fig. 2: one row per run from data.history, newest first. A Monday 6+ days
+// after the previous run with no run of its own gets a "no run" row (the
+// workflow skips a Monday within 6 days of a run, so that's not a miss).
+const AI = ["ai_program_or_tpm", "ai_pm_no_ml_required", "ai_pm_ml_required"];
+const day = (iso) => new Date(iso + "T12:00:00");
+const short = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+function missedMondays(older, newer) {
+  const out = [];
+  const d = day(older);
+  d.setDate(d.getDate() + 6);
+  while (d.getDay() !== 1) d.setDate(d.getDate() + 1);
+  for (; d < day(newer); d.setDate(d.getDate() + 7)) out.push(short(d));
+  return out;
+}
+function renderLedger(history) {
+  if (!history || !history.length) return;
+  const runs = [...history].sort((a, b) => (a.date < b.date ? 1 : -1));
+  const cell = (text, cls = "r") => el("td", { class: cls, text });
+  const rows = [];
+  runs.forEach((h, i) => {
+    const b = h.buckets || {};
+    const ml = b.ai_pm_ml_required || 0, aiPm = ml + (b.ai_pm_no_ml_required || 0);
+    rows.push(el("tr", { class: i === 0 ? "latest" : "" },
+      el("td", {}, el("span", { class: "when", text: short(day(h.date)) }), el("span", { class: "sub", text: h.trigger === "scheduled" ? "Scheduled" : "By hand" })),
+      cell(h.scanned ? fmt(h.scanned) : "—", "r wide"),
+      cell(fmt(h.labeled), "r wide"),
+      cell(fmt(AI.reduce((n, k) => n + (b[k] || 0), 0))),
+      cell(`${fmt(ml)} of ${fmt(aiPm)}`),
+      cell(`${fmt(h.toronto_pm)} of ${fmt(h.toronto)}`),
+      cell(h.seconds ? h.seconds.toFixed(1) + " s" : "—", "r wide"),
+      cell("$" + h.cost_usd.toFixed(2), "r wide")));
+    const older = runs[i + 1];
+    const missed = older ? missedMondays(older.date, h.date) : [];
+    if (missed.length) {
+      rows.push(el("tr", { class: "gap" }, el("td", { colspan: "8", text: `No run on ${missed.join(", ").replace(/, ([^,]*)$/, " or $1")}` })));
+    }
+  });
+  $("ledger-rows").replaceChildren(...rows);
+  $("runs").hidden = false;
+}
+
 function renderEval() {
   document.querySelectorAll(".erow .fill").forEach((f) => (f.style.width = f.dataset.v + "%"));
 }
@@ -247,6 +288,7 @@ async function main() {
     roles = data.roles;
     run = data.run;
     renderRun(run);
+    renderLedger(data.history);
   } catch (e) {
     $("count").textContent = "Could not load the latest run.";
     $("flow").textContent = "Could not load the latest run.";

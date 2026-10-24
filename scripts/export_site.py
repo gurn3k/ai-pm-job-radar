@@ -4,6 +4,10 @@
 Only public posting facts and Jev's labels go out. Descriptions, the answer
 cache and anything else from the run folder stay local.
 
+data.json also keeps a short history: one summary row per run (scale, buckets,
+Toronto counts, time, cost), carried over from the live file and appended to,
+so the page can show every run, not just the latest.
+
     python3 scripts/export_site.py jev-runs/radar/full --scanned 8381
 """
 import argparse
@@ -21,9 +25,34 @@ NAMES = {
     "elevenlabs": "ElevenLabs", "deepgram": "Deepgram", "supabase": "Supabase",
 }
 
+# Buckets a person in Toronto could apply to, and the toronto-fit values (match site/app.js).
+TARGET = {"ai_program_or_tpm", "ai_pm_no_ml_required", "ai_pm_ml_required", "program_or_tpm_non_ai", "pm_non_ai"}
+CANADA = {"remote_canada", "toronto_ontario_office", "canada_other_city", "canada_unspecified"}
+
 FIELDS = ["company", "title", "location", "department", "url", "pay_low", "pay_high",
           "remote_listed", "location_fit", "role_kind", "ai_scope", "seniority",
           "requires_ml_background", "requires_hands_on_ai", "requires_engineering_background"]
+
+
+def summarize(run, roles, trigger):
+    """One history row: the run's stats plus counts computed from its roles."""
+    buckets = {}
+    for r in roles:
+        buckets[r["bucket"]] = buckets.get(r["bucket"], 0) + 1
+    toronto = [r for r in roles if r.get("location_fit") in CANADA]
+    return {
+        "date": run["date"], "trigger": trigger, "model": run["model"],
+        "scanned": run["scanned"], "labeled": run["labeled"],
+        "seconds": run["seconds"], "cost_usd": run["cost_usd"],
+        "buckets": dict(sorted(buckets.items())),
+        "toronto": len(toronto),
+        "toronto_pm": sum(r["bucket"] in TARGET for r in toronto),
+    }
+
+
+def with_run(history, row):
+    """History with this run added; a rerun on the same date replaces that day's row."""
+    return sorted([h for h in history if h["date"] != row["date"]] + [row], key=lambda h: h["date"])
 
 
 def main():
@@ -32,6 +61,8 @@ def main():
     ap.add_argument("--scanned", type=int, help="open roles scanned before the title filter (printed by fetch.py)")
     ap.add_argument("--date", help="run date YYYY-MM-DD (default: results.jsonl modified date)")
     ap.add_argument("--out", default=str(ROOT / "site" / "data.json"))
+    ap.add_argument("--trigger", choices=["scheduled", "manual"], default="manual",
+                    help="how this run was started, for the run ledger (the Monday workflow passes scheduled)")
     ap.add_argument("--force", action="store_true", help="publish even if the role count dropped by more than half")
     a = ap.parse_args()
 
@@ -47,8 +78,9 @@ def main():
         expected = sum(1 for l in inp.open(encoding="utf-8") if l.strip())
         if len(rows) < 0.95 * expected:
             raise SystemExit(f"Only {len(rows)} of {expected} roles labeled; not exporting.")
-    if Path(a.out).exists() and not a.force:
-        live = len(json.loads(Path(a.out).read_text(encoding="utf-8"))["roles"])
+    live_data = json.loads(Path(a.out).read_text(encoding="utf-8")) if Path(a.out).exists() else {}
+    if live_data and not a.force:
+        live = len(live_data["roles"])
         if len(rows) < 0.5 * live:
             raise SystemExit(f"{len(rows)} roles vs {live} on the live page; not exporting (use --force if this is real).")
 
@@ -81,9 +113,10 @@ def main():
         },
         "roles": roles,
     }
+    data["history"] = with_run(live_data.get("history", []), summarize(data["run"], roles, a.trigger))
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(data, separators=(",", ":"), ensure_ascii=False), encoding="utf-8")
-    print(f"{len(roles)} roles -> {a.out} ({Path(a.out).stat().st_size // 1024} KB)")
+    print(f"{len(roles)} roles -> {a.out} ({Path(a.out).stat().st_size // 1024} KB), {len(data['history'])} runs in the history")
 
 
 if __name__ == "__main__":

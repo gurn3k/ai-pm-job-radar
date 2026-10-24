@@ -24,22 +24,40 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
 
+      # A Monday soon after a refresh is skipped, so a manual run late in the week
+      # (2026-10-24) covers the next Monday too. A manual run always goes ahead.
+      - name: Skip if refreshed in the last 6 days
+        id: gate
+        if: github.event_name == 'schedule'
+        run: |
+          last=$(python3 -c "import json; print(json.load(open('site/data.json'))['run']['date'])")
+          age=$(( ( $(date -u +%s) - $(date -u -d "$last" +%s) ) / 86400 ))
+          if [ "$age" -lt 6 ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "Last refresh $last, $age days ago: skipping this Monday."
+          fi
+
       - name: Fetch postings
+        if: steps.gate.outputs.skip != 'true'
         run: |
           mkdir -p jev-runs/weekly
           python3 radar/fetch.py --out jev-runs/weekly/input.jsonl | tee jev-runs/weekly/fetch.log
 
       - name: Label with Jev
+        if: steps.gate.outputs.skip != 'true'
         env:
           TYPESAFE_API_KEY: ${{ secrets.TYPESAFE_API_KEY }}
         run: python3 scripts/jev.py run radar/spec.json jev-runs/weekly/input.jsonl --out jev-runs/weekly --max-cost 0.30
 
       - name: Export site data
+        if: steps.gate.outputs.skip != 'true'
         run: |
           scanned=$(grep -oE '^[0-9,]+ open roles' jev-runs/weekly/fetch.log | tr -dc 0-9)
-          python3 scripts/export_site.py jev-runs/weekly --scanned "$scanned" --date "$(date -u +%F)"
+          trigger=$([ "${{ github.event_name }}" = schedule ] && echo scheduled || echo manual)
+          python3 scripts/export_site.py jev-runs/weekly --scanned "$scanned" --date "$(date -u +%F)" --trigger "$trigger"
 
       - name: Commit and push
+        if: steps.gate.outputs.skip != 'true'
         run: |
           git config user.name "Gurnek Khaira"
           git config user.email "319908404+gurn3k@users.noreply.github.com"
