@@ -8,31 +8,31 @@ I built this for my own search: I'm a Toronto-based program manager targeting AI
 
 ![The live radar: the headline finding above a figure that narrows 8,427 open roles to the ones kept and labeled](docs/images/screenshot.png)
 
-## First full run (2026-10-02)
+## Latest run (2026-10-24)
 
-The live page refreshes every Monday (see `.github/workflows/weekly-refresh.yml`); these are the numbers from the first run.
+The live page refreshes every Monday in GitHub Actions (see `.github/workflows/weekly-refresh.yml`). These are the numbers from the latest run, next to the first full run.
 
-| | |
-|---|---|
-| Open roles scanned | 8,381 across 36 public job boards |
-| Product or program titles | 1,018 |
-| Labeled by Jev | 1,018 in 15.0 s (p50 209 ms per call), 0 errors |
-| Cost | $0.107 (2.55M input tokens at $0.042 per million; output is free) |
-| Model | `jev-1.13.0` |
+| | 2026-10-24 | First run, 2026-10-02 |
+|---|---|---|
+| Open roles scanned | 8,387 across 36 public job boards | 8,381 |
+| Product or program titles | 981 | 1,018 |
+| Labeled by Jev | 981 in 6.6 s (p50 95 ms per call), 0 errors | 1,018 in 15.0 s (p50 209 ms), 0 errors |
+| Cost | $0.111 (2.64M input tokens at $0.042 per million; output is free) | $0.107 (2.55M input tokens) |
+| Model | `jev-1.14.0` | `jev-1.13.0` |
 
-| Bucket | Roles |
-|---|---|
-| AI program / TPM | 126 |
-| AI PM, no ML background required | 189 |
-| AI PM, ML background required | 9 |
-| Program / TPM, not AI | 141 |
-| PM, not AI | 116 |
-| Not a PM or program role | 403 |
-| Low confidence, needs review | 34 |
+| Bucket | 2026-10-24 | 2026-10-02 |
+|---|---|---|
+| AI program / TPM | 105 | 126 |
+| AI PM, no ML background required | 160 | 189 |
+| AI PM, ML background required | 16 | 9 |
+| Program / TPM, not AI | 134 | 141 |
+| PM, not AI | 132 | 116 |
+| Not a PM or program role | 376 | 403 |
+| Low confidence, needs review | 58 | 34 |
 
-Of the 1,018 roles, 56 can be done from Toronto (remote in Canada, or a Toronto, Ontario or other Canadian office), and 26 of those land in a target bucket.
+Of the 981 roles, 53 can be done from Toronto (remote in Canada, or a Toronto, Ontario or other Canadian office), and 21 of those are PM or program roles (first run: 26 of 56).
 
-**Finding:** only 9 of 198 AI PM roles list hands-on ML experience as a must-have. Most AI product roles want judgment about AI, not a model-building background.
+**Finding:** only 16 of 176 AI PM roles list hands-on ML experience as a must-have (first run: 9 of 198). Most AI product roles want judgment about AI, not a model-building background.
 
 ## How it works
 
