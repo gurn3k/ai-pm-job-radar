@@ -6,7 +6,7 @@ web (one static page)
 
 ## Stack
 
-A static page in `site/` (HTML, CSS, vanilla JS, no build step, no dependencies), rendered from `site/data.json`, which `scripts/export_site.py` writes after each Jev run. Hosted on Vercel with Root Directory `site`, auto-deployed on every push to main. A local scheduled job refreshes it every Monday. No API key on Vercel. The page runs under a strict content security policy (`site/vercel.json`): scripts, styles and data from the same origin only, no inline styles, no third-party fonts or scripts.
+A static page in `site/` (HTML, CSS, vanilla JS, no build step, no dependencies), rendered from `site/data.json`, which `scripts/export_site.py` writes after each Jev run. Hosted on Vercel with Root Directory `site`, auto-deployed on every push to main. A GitHub Actions workflow refreshes it every Monday (`.github/workflows/weekly-refresh.yml`). No API key on Vercel. The page runs under a strict content security policy (`site/vercel.json`): scripts, styles and data from the same origin only, no inline styles, no third-party fonts or scripts.
 
 ## Users
 
