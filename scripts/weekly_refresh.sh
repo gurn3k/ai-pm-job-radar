@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Weekly radar refresh, run on the owner's machine by Windows Task Scheduler (Mondays).
+# Radar refresh from a local machine. The Monday refresh runs in GitHub Actions
+# (.github/workflows/weekly-refresh.yml); this is the same refresh, by hand.
 # Fetch, label with Jev (capped at $0.30), export, push; Vercel deploys the push.
 # The API key stays in the local .env.local. Log: jev-runs/weekly/refresh.log
 set -euo pipefail

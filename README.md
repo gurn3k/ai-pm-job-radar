@@ -10,7 +10,7 @@ I built this for my own search: I'm a Toronto-based program manager targeting AI
 
 ## First full run (2026-10-02)
 
-The live page refreshes every Monday (see `scripts/weekly_refresh.sh`); these are the numbers from the first run.
+The live page refreshes every Monday (see `.github/workflows/weekly-refresh.yml`); these are the numbers from the first run.
 
 | | |
 |---|---|
@@ -105,7 +105,7 @@ python3 ../../scripts/jev.py run ../../radar/spec.json input.jsonl --out . --sam
 python3 ../../scripts/jev.py run ../../radar/spec.json input.jsonl --out .              # everything
 ```
 
-The site refreshes every Monday from the owner's machine (Windows Task Scheduler runs `scripts/weekly_refresh.sh`): fetch, label (capped at $0.30), export, push, and Vercel redeploys. The API key never leaves that machine. The export refuses to publish if more than 5% of labels failed or the role count halves. To refresh by hand, export and push:
+The site refreshes every Monday in GitHub Actions (`.github/workflows/weekly-refresh.yml`): fetch, label (capped at $0.30), export, push, and Vercel redeploys. The TypeSafe key is an encrypted repository secret; a run can also be started from the Actions tab. `scripts/weekly_refresh.sh` does the same refresh from a local machine with the key in `.env.local`. The export refuses to publish if more than 5% of labels failed or the role count halves. To refresh by hand, export and push:
 
 ```bash
 python3 scripts/export_site.py jev-runs/radar/full --scanned <total printed by fetch.py>
