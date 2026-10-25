@@ -101,13 +101,16 @@ function renderFlow(run, animate) {
   const step = narrow ? 58 : 46;
   const barY = 36, barH = 10;
   const yDrop = barY + barH + 24, yKept = yDrop + step, yCode = yKept + step, yJev = yCode + step;
-  const yP = yJev + 72, gap = narrow ? 26 : 24, R0 = narrow ? 20 : 28;
+  // Rows of labels need a 24-26 px gap; across the page a phone can only spare
+  // a few px per stream, so there the turns are flattened ellipses.
+  const yP = yJev + 72, gap = narrow ? 26 : 24, hgap = narrow ? (W < 320 ? 4 : 8) : gap, R0 = narrow ? 20 : 28;
   const xs = [];
-  LANES.forEach((_, i) => xs.push(i ? xs[i - 1] + t[i - 1] + gap : 0));
+  LANES.forEach((_, i) => xs.push(i ? xs[i - 1] + t[i - 1] + hgap : 0));
   const last = LANES.length - 1;
   const cx = xs[last] + t[last] + R0, cy = yP, xEnd = cx + 20;
   const radius = (i) => cx - (xs[i] + t[i]);
-  const H = cy + radius(0) + t[0] + 18;
+  const rise = (i) => radius(i) + (last - i) * (gap - hgap);
+  const H = cy + rise(0) + t[0] + 18;
   box.style.height = H + "px";
 
   const s = svgEl("svg", { width: W, height: H, viewBox: `0 0 ${W} ${H}`, "aria-hidden": "true" });
@@ -137,10 +140,10 @@ function renderFlow(run, animate) {
   let c = 0;
   const streams = {};
   LANES.forEach((b, i) => {
-    const w = t[i], x = xs[i], R = radius(i), n = counts[b] || 0;
+    const w = t[i], x = xs[i], R = radius(i), V = rise(i), n = counts[b] || 0;
     const d = `M${c},${yJev} C${c},${ym} ${x},${ym} ${x},${cy} ` +
-      `A${R + w},${R + w} 0 0 0 ${cx},${cy + R + w} L${xEnd},${cy + R + w} L${xEnd},${cy + R} L${cx},${cy + R} ` +
-      `A${R},${R} 0 0 1 ${x + w},${cy} C${x + w},${ym} ${c + w},${ym} ${c + w},${yJev} Z`;
+      `A${R + w},${V + w} 0 0 0 ${cx},${cy + V + w} L${xEnd},${cy + V + w} L${xEnd},${cy + V} L${cx},${cy + V} ` +
+      `A${R},${V} 0 0 1 ${x + w},${cy} C${x + w},${ym} ${c + w},${ym} ${c + w},${yJev} Z`;
     c += w;
     const p = svgEl("path", { class: `stream s-${group(b)}`, d });
     p.append(svgEl("title", {}));
@@ -150,7 +153,7 @@ function renderFlow(run, animate) {
 
     const name = narrow || W - xEnd < 330 ? SHORT[b] : BUCKETS[b][0];
     const btn = el("button", { type: "button", class: `fl g-${group(b)}`, title: `Show the ${fmt(n)} roles in this bucket` }, name, num(fmt(n)));
-    btn.style.top = cy + R + w / 2 + "px";
+    btn.style.top = cy + V + w / 2 + "px";
     btn.style.left = xEnd + 10 + "px";
     btn.style.setProperty("--d", 0.85 + (last - i) * 0.06 + "s");
     const on = (v) => { box.classList.toggle("hovering", v); p.classList.toggle("on", v); btn.classList.toggle("on", v); };
