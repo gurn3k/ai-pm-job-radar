@@ -10,7 +10,7 @@ I built this for my own search: I'm a Toronto-based program manager targeting AI
 
 ## Latest run (2026-10-24)
 
-The live page refreshes every Monday in GitHub Actions (see `.github/workflows/weekly-refresh.yml`). These are the numbers from the latest run, next to the first scheduled run (the ledger on the page starts there too).
+The live page refreshes every week in GitHub Actions (see `.github/workflows/weekly-refresh.yml`). These are the numbers from the latest run, next to the first scheduled run (the ledger on the page starts there too).
 
 | | 2026-10-24 | First scheduled run, 2026-10-05 |
 |---|---|---|
@@ -105,7 +105,7 @@ python3 ../../scripts/jev.py run ../../radar/spec.json input.jsonl --out . --sam
 python3 ../../scripts/jev.py run ../../radar/spec.json input.jsonl --out .              # everything
 ```
 
-The site refreshes every Monday in GitHub Actions (`.github/workflows/weekly-refresh.yml`): fetch, label (capped at $0.30), export, push, and Vercel redeploys. The TypeSafe key is an encrypted repository secret; a run can also be started from the Actions tab. `scripts/weekly_refresh.sh` does the same refresh from a local machine with the key in `.env.local`. The export refuses to publish if more than 5% of labels failed or the role count halves. To refresh by hand, export and push:
+The site refreshes every week in GitHub Actions (`.github/workflows/weekly-refresh.yml`): fetch, label (capped at $0.30), export, push, and Vercel redeploys. The TypeSafe key is an encrypted repository secret; a run can also be started from the Actions tab. `scripts/weekly_refresh.sh` does the same refresh from a local machine with the key in `.env.local`. The export refuses to publish if more than 5% of labels failed or the role count halves. To refresh by hand, export and push:
 
 ```bash
 python3 scripts/export_site.py jev-runs/radar/full --scanned <total printed by fetch.py>
