@@ -51,7 +51,7 @@ System fonts only. The CSP (`default-src 'none'`) blocks web fonts. Adding one m
 
 ## Layout
 
-The story column (masthead, Fig. 1, method, accuracy) is capped at 760px. The roles explorer uses the full 1120px. Sections are separated by a 1px ink rule at the top (`--rule-strong`), not by cards or background bands. Fig. 1 labels are HTML placed over the SVG, so they wrap and stay selectable. On phones the bucket labels switch to short names.
+The story column (masthead, Fig. 1, method, accuracy) is capped at 760px. The roles explorer uses the full 1120px. Sections are separated by a 1px ink rule at the top (`--rule-strong`), not by cards or background bands. Fig. 1 labels are HTML placed over the SVG, so they wrap and stay selectable. On phones the bucket labels switch to short names, and the streams' turns flatten into ellipses: rows keep their vertical spacing while the streams pack tighter across, so the labels fit beside them down to 320px.
 
 ## Components
 
