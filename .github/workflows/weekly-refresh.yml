@@ -56,6 +56,12 @@ jobs:
           trigger=$([ "${{ github.event_name }}" = schedule ] && echo scheduled || echo manual)
           python3 scripts/export_site.py jev-runs/weekly --scanned "$scanned" --date "$(date -u +%F)" --trigger "$trigger"
 
+      # Extra data for the case-study deck. Prints to the run summary only and can't block the push.
+      - name: Keyword rule against Jev
+        if: steps.gate.outputs.skip != 'true'
+        continue-on-error: true
+        run: python3 scripts/keyword_check.py jev-runs/weekly | tee -a "$GITHUB_STEP_SUMMARY"
+
       - name: Commit and push
         if: steps.gate.outputs.skip != 'true'
         run: |
