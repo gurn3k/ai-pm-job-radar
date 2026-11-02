@@ -1,0 +1,29 @@
+# Alarm for a refresh that never started. GitHub emails the owner when a run fails,
+# but says nothing when a scheduled run is dropped. This fails (so GitHub emails) when
+# site/data.json is more than 8 days old, which means Monday's main and backup runs
+# both missed.
+name: Radar freshness check
+
+on:
+  schedule:
+    - cron: "41 14 * * 2"   # Tuesdays 14:41 UTC, the day after the Monday refresh
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Fail if data.json is stale
+        run: |
+          last=$(python3 -c "import json; print(json.load(open('site/data.json'))['run']['date'])")
+          age=$(( ( $(date -u +%s) - $(date -u -d "$last" +%s) ) / 86400 ))
+          echo "Last refresh $last, $age days ago."
+          if [ "$age" -gt 8 ]; then
+            echo "::error::Radar data is $age days old (last refresh $last). The Monday runs did not go through."
+            exit 1
+          fi

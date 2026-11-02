@@ -7,7 +7,8 @@ name: Weekly radar refresh
 
 on:
   schedule:
-    - cron: "0 11 * * 1"   # Mondays 11:00 UTC = 7:00 Toronto in summer, 6:00 in winter
+    - cron: "23 11 * * 1"   # main run: Mondays 11:23 UTC = 7:23 Toronto in summer, 6:23 in winter
+    - cron: "47 15 * * 1"   # backup, same day; the gate below skips it when the main run went through
   workflow_dispatch:       # manual run from the Actions tab
 
 permissions:
