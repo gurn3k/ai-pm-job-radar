@@ -268,7 +268,7 @@ function renderWeeks(runs) {
 // Why a scheduled Monday has no run, keyed by the label missedMondays() returns.
 const MISSED_WHY = {
   "Oct 12": "The weekly job ran on my own PC, which was off. Moved to GitHub Actions on Oct 24; no misses since.",
-  "Oct 19": "Same cause as Oct 12: the job still ran on my own PC, which was off. Moved to GitHub Actions on Oct 24; no misses since.",
+  "Oct 19": "After Oct 12, I adjusted the job on my PC to fix the miss, but the fix didn't work and this run failed too. So I moved it to GitHub Actions on Oct 24; no misses since.",
 };
 function showGap(m) {
   $("week-detail").replaceChildren(
