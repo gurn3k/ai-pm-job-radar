@@ -55,7 +55,7 @@ h1 .hl { color: var(--jev-ink); }
 figure { margin: 0; }
 .fig-title { font-size: 0.86rem; font-weight: 600; color: var(--ink-soft); margin-bottom: 18px; }
 .fig-n { font-family: var(--mono); font-weight: 600; color: var(--ink); margin-right: 6px; }
-.src { font-family: var(--mono); font-size: 0.74rem; color: var(--ink-faint); margin: 14px 0 0; }
+.src { font-family: var(--mono); font-size: 0.78rem; color: var(--ink-faint); margin: 14px 0 0; }
 .src a { color: inherit; }
 
 /* Fig. 1, the sorting line */
@@ -121,6 +121,30 @@ button.fl.g-none { color: var(--ink-soft); }
 .erow .track { height: 10px; background: var(--rule); border-radius: 0 4px 4px 0; }
 .erow .fill { display: block; height: 100%; width: 0; background: var(--jev); border-radius: 0 4px 4px 0; }
 .erow b { text-align: right; font-family: var(--mono); font-size: 0.86rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+/* Fig. 2 week strip: one column per run (AI / other / not a fit), a dashed slot per missed week. */
+.weeks-wrap { overflow-x: auto; border-top: 1px solid var(--rule-strong); padding-top: 14px; }
+.weeks { display: flex; gap: 10px; align-items: flex-end; min-width: min-content; }
+.wk { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 88px; flex: none; padding: 8px; border: 1px solid transparent; border-radius: 6px; background: none; color: var(--ink-soft); font: inherit; cursor: pointer; }
+.wk:hover, .wk:focus-visible { border-color: var(--rule); outline: none; }
+.wk[aria-pressed="true"] { border-color: var(--rule-strong); background: var(--surface); color: var(--ink); }
+.wk .n { font-family: var(--mono); font-size: 0.82rem; font-weight: 600; color: var(--jev-ink); min-height: 1.2em; }
+.wk .col { width: 34px; height: 130px; display: flex; flex-direction: column; justify-content: flex-end; }
+.wk .seg { display: block; width: 100%; transition: height .5s ease; }
+.seg.g-ai { background: var(--jev); } .seg.g-other { background: var(--other); } .seg.g-none { background: var(--none); }
+.wk .when { font-family: var(--mono); font-size: 0.8rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.wk .sub { font-size: 0.76rem; color: var(--ink-faint); }
+.wk.gap { cursor: default; }
+.wk.gap .col { justify-content: center; align-items: center; border: 1px dashed var(--ink-faint); border-radius: 3px; background: repeating-linear-gradient(-45deg, transparent 0 6px, var(--rule) 6px 7px); }
+.wk.gap .col span { writing-mode: vertical-rl; font-size: 0.76rem; font-style: italic; color: var(--ink-faint); }
+.week-detail { margin: 14px 0 10px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; }
+.wd-head { margin: 0 0 8px; font-size: 0.86rem; color: var(--ink-soft); }
+.week-detail dl { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 10px 16px; margin: 0; }
+.week-detail dt { font-size: 0.78rem; color: var(--ink-faint); }
+.week-detail dd { margin: 0; font-family: var(--mono); font-size: 0.95rem; color: var(--ink); }
+.dl { display: block; font-size: 0.76rem; }
+.dl.up { color: var(--can); } .dl.down { color: #b4532a; } .dl.flat { color: var(--ink-faint); }
+.ledger-table summary { cursor: pointer; font-size: 0.84rem; color: var(--ink-soft); margin: 4px 0 8px; }
+
 /* Fig. 2, the run ledger: facts in mono, the latest run in full ink, missed Mondays as their own row. */
 table.ledger { border-top: 1px solid var(--rule-strong); }
 .ledger tbody tr:hover { background: none; }
@@ -150,10 +174,10 @@ input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--jev); }
 .table-wrap { border-top: 1px solid var(--rule); }
 table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid var(--rule); vertical-align: top; }
-th { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); font-weight: 600; white-space: nowrap; }
+th { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--ink-soft); font-weight: 600; white-space: nowrap; }
 tbody tr:hover { background: var(--jev-wash); }
 .r { text-align: right; font-family: var(--mono); font-size: 0.84rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
-th.r { font-family: var(--sans); font-size: 0.74rem; }
+th.r { font-family: var(--sans); font-size: 0.78rem; }
 td .co { display: block; font-size: 0.76rem; font-weight: 650; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-soft); }
 td .ttl { font-weight: 550; }
 td a.ttl { color: var(--ink); text-decoration-color: var(--rule); }

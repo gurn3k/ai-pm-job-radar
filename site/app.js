@@ -217,7 +217,71 @@ function renderLedger(history) {
     }
   });
   $("ledger-rows").replaceChildren(...rows);
+  renderWeeks(runs.slice().reverse());
   $("runs").hidden = false;
+}
+
+// Fig. 2 strip: oldest to newest, one column per run, a dashed slot per missed Monday.
+const runStats = (h) => {
+  const b = h.buckets || {};
+  const sum = (ks) => ks.reduce((n, k) => n + (b[k] || 0), 0);
+  const ml = b.ai_pm_ml_required || 0;
+  return { ai: sum(AI), other: sum(["pm_non_ai", "program_or_tpm_non_ai"]), none: sum(["not_a_fit", "review"]), ml, aiPm: ml + (b.ai_pm_no_ml_required || 0) };
+};
+function renderWeeks(runs) {
+  const max = Math.max(...runs.map((h) => h.labeled || 0)) || 1;
+  const tiles = [], buttons = [];
+  const select = (i) => {
+    buttons.forEach((b, j) => b.setAttribute("aria-pressed", String(j === i)));
+    showWeek(runs[i], runs[i - 1]);
+  };
+  runs.forEach((h, i) => {
+    if (i) for (const m of missedMondays(runs[i - 1].date, h.date)) {
+      tiles.push(el("div", { class: "wk gap" }, el("span", { class: "n", text: " " }), el("div", { class: "col" }, el("span", { text: "No run" })),
+        el("span", { class: "when", text: m }), el("span", { class: "sub", text: "Missed" })));
+    }
+    const s = runStats(h);
+    const seg = (n, g) => { const d = el("span", { class: `seg g-${g}` }); d.style.height = (n / max) * 100 + "%"; return d; };
+    const btn = el("button", { type: "button", class: "wk", "aria-pressed": "false", "aria-label": `Run of ${short(day(h.date))}: ${fmt(s.ai)} AI roles of ${fmt(h.labeled)} kept` },
+      el("span", { class: "n", text: fmt(s.ai) }),
+      el("div", { class: "col" }, seg(s.none, "none"), seg(s.other, "other"), seg(s.ai, "ai")),
+      el("span", { class: "when", text: short(day(h.date)) }),
+      el("span", { class: "sub", text: h.trigger === "scheduled" ? "Scheduled" : "By hand" }));
+    const idx = buttons.length;
+    btn.addEventListener("click", () => select(idx));
+    btn.addEventListener("mouseenter", () => select(idx));
+    btn.addEventListener("keydown", (e) => {
+      const k = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      if (k && buttons[idx + k]) { e.preventDefault(); buttons[idx + k].focus(); select(idx + k); }
+    });
+    buttons.push(btn); tiles.push(btn);
+  });
+  $("weeks").replaceChildren(...tiles);
+  select(runs.length - 1);
+  const wrap = $("weeks").parentElement;
+  wrap.scrollLeft = wrap.scrollWidth;
+}
+function showWeek(h, prev) {
+  const s = runStats(h), p = prev && runStats(prev);
+  const delta = (now, then, cents) => {
+    if (then == null || now == null) return null;
+    const d = cents ? Math.round((now - then) * 100) / 100 : now - then;
+    if (!d) return el("span", { class: "dl flat", text: "no change" });
+    const amt = cents ? "$" + Math.abs(d).toFixed(2) : fmt(Math.abs(d));
+    return el("span", { class: "dl " + (d > 0 ? "up" : "down"), text: (d > 0 ? "▲ " : "▼ ") + amt });
+  };
+  const stat = (label, val, now, then, cents) => el("div", {}, el("dt", { text: label }), el("dd", {}, val, delta(now, then, cents)));
+  const long = day(h.date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  $("week-detail").replaceChildren(
+    el("p", { class: "wd-head" }, el("strong", { text: long }),
+      ` · ${h.trigger === "scheduled" ? "scheduled" : "run by hand"} · ${h.model}` + (prev ? ` · change vs ${short(day(prev.date))}` : " · first run")),
+    el("dl", {},
+      stat("Scanned", h.scanned ? fmt(h.scanned) : "—", h.scanned, prev && prev.scanned),
+      stat("Kept", fmt(h.labeled), h.labeled, prev && prev.labeled),
+      stat("AI roles", fmt(s.ai), s.ai, p && p.ai),
+      stat("ML required", `${fmt(s.ml)} of ${fmt(s.aiPm)}`, s.ml, p && p.ml),
+      stat("Toronto PM", `${fmt(h.toronto_pm)} of ${fmt(h.toronto)}`, h.toronto_pm, prev && prev.toronto_pm),
+      stat("Cost", "$" + h.cost_usd.toFixed(2), h.cost_usd, prev && prev.cost_usd, true)));
 }
 
 function renderEval() {

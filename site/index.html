@@ -65,7 +65,10 @@
       <h2 id="runs-h">Every run, on the record</h2>
       <p>The page is rebuilt from a fresh run each week, and every run stays in the ledger, including the weeks it didn't run.</p>
       <figure aria-labelledby="ledger-cap">
-        <figcaption id="ledger-cap" class="fig-title"><span class="fig-n">Fig. 2</span> Every run so far, newest first</figcaption>
+        <figcaption id="ledger-cap" class="fig-title"><span class="fig-n">Fig. 2</span> Every week so far. Bar height is roles kept. Pick a run to see its numbers and the change from the run before.</figcaption>
+        <div class="weeks-wrap"><div id="weeks" class="weeks" role="group" aria-label="Runs by week"></div></div>
+        <div id="week-detail" class="week-detail" aria-live="polite"></div>
+        <details class="ledger-table"><summary>Show as a table, newest first</summary>
         <table id="ledger" class="ledger">
           <thead><tr>
             <th scope="col">Run</th>
@@ -79,6 +82,7 @@
           </tr></thead>
           <tbody id="ledger-rows"></tbody>
         </table>
+        </details>
         <p class="src">Source: <a href="data.json">data.json</a> history, one row per run</p>
       </figure>
       <p class="note">The ledger starts at the first scheduled run. October 12 and 19 were missed because the Monday run was scheduled on my own PC, and the PC wasn't on when it was due. Since October 24 it runs in GitHub Actions. A Monday within six days of a manual run is skipped on purpose and isn't counted as missed.</p>
