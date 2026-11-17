@@ -230,15 +230,26 @@ const runStats = (h) => {
 };
 function renderWeeks(runs) {
   const max = Math.max(...runs.map((h) => h.labeled || 0)) || 1;
-  const tiles = [], buttons = [];
+  const buttons = [], views = [];
   const select = (i) => {
     buttons.forEach((b, j) => b.setAttribute("aria-pressed", String(j === i)));
-    showWeek(runs[i], runs[i - 1]);
+    views[i]();
+  };
+  const add = (btn, view) => {
+    const idx = buttons.length;
+    btn.addEventListener("click", () => select(idx));
+    btn.addEventListener("mouseenter", () => select(idx));
+    btn.addEventListener("keydown", (e) => {
+      const k = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+      if (k && buttons[idx + k]) { e.preventDefault(); buttons[idx + k].focus(); select(idx + k); }
+    });
+    buttons.push(btn); views.push(view);
   };
   runs.forEach((h, i) => {
     if (i) for (const m of missedMondays(runs[i - 1].date, h.date)) {
-      tiles.push(el("div", { class: "wk gap" }, el("span", { class: "n", text: " " }), el("div", { class: "col" }, el("span", { text: "No run" })),
-        el("span", { class: "when", text: m }), el("span", { class: "sub", text: "Missed" })));
+      add(el("button", { type: "button", class: "wk gap", "aria-pressed": "false", "aria-label": `${m}: no run` },
+        el("span", { class: "n", text: " " }), el("div", { class: "col" }, el("span", { text: "No run" })),
+        el("span", { class: "when", text: m }), el("span", { class: "sub", text: "Missed" })), () => showGap(m));
     }
     const s = runStats(h);
     const seg = (n, g) => { const d = el("span", { class: `seg g-${g}` }); d.style.height = (n / max) * 100 + "%"; return d; };
@@ -247,19 +258,22 @@ function renderWeeks(runs) {
       el("div", { class: "col" }, seg(s.none, "none"), seg(s.other, "other"), seg(s.ai, "ai")),
       el("span", { class: "when", text: short(day(h.date)) }),
       el("span", { class: "sub", text: h.trigger === "scheduled" ? "Scheduled" : "By hand" }));
-    const idx = buttons.length;
-    btn.addEventListener("click", () => select(idx));
-    btn.addEventListener("mouseenter", () => select(idx));
-    btn.addEventListener("keydown", (e) => {
-      const k = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
-      if (k && buttons[idx + k]) { e.preventDefault(); buttons[idx + k].focus(); select(idx + k); }
-    });
-    buttons.push(btn); tiles.push(btn);
+    add(btn, () => showWeek(h, runs[i - 1]));
   });
-  $("weeks").replaceChildren(...tiles);
-  select(runs.length - 1);
+  $("weeks").replaceChildren(...buttons);
+  select(buttons.length - 1);
   const wrap = $("weeks").parentElement;
   wrap.scrollLeft = wrap.scrollWidth;
+}
+// Why a scheduled Monday has no run, keyed by the label missedMondays() returns.
+const MISSED_WHY = {
+  "Oct 12": "The weekly job ran on my own PC, which was off. Moved to GitHub Actions on Oct 24; no misses since.",
+  "Oct 19": "Same cause as Oct 12: the job still ran on my own PC, which was off. Moved to GitHub Actions on Oct 24; no misses since.",
+};
+function showGap(m) {
+  $("week-detail").replaceChildren(
+    el("p", { class: "wd-head" }, el("strong", { text: `${m} · no run` })),
+    el("p", { class: "wd-why", text: MISSED_WHY[m] || "The scheduled run didn't happen this week." }));
 }
 function showWeek(h, prev) {
   const s = runStats(h), p = prev && runStats(prev);

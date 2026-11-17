@@ -133,7 +133,8 @@ button.fl.g-none { color: var(--ink-soft); }
 .seg.g-ai { background: var(--jev); } .seg.g-other { background: var(--other); } .seg.g-none { background: var(--none); }
 .wk .when { font-family: var(--mono); font-size: 0.8rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .wk .sub { font-size: 0.76rem; color: var(--ink-faint); }
-.wk.gap { cursor: default; }
+.wk.gap { cursor: pointer; }
+.wd-why { margin: 0; color: var(--ink); }
 .wk.gap .col { justify-content: center; align-items: center; border: 1px dashed var(--ink-faint); border-radius: 3px; background: repeating-linear-gradient(-45deg, transparent 0 6px, var(--rule) 6px 7px); }
 .wk.gap .col span { writing-mode: vertical-rl; font-size: 0.76rem; font-style: italic; color: var(--ink-faint); }
 .week-detail { margin: 14px 0 10px; padding: 12px 14px; background: var(--surface); border: 1px solid var(--rule); border-radius: 6px; }
